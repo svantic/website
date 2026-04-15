@@ -36,7 +36,7 @@ const NAV_ITEMS = [
       { label: 'Documentation', href: 'https://docs.svantic.com', external: true },
       { label: 'Blog', href: '/blog' },
       { label: 'Changelog', href: '/changelog' },
-      { label: 'API Reference', href: 'https://docs.svantic.com/api-reference', external: true },
+      { label: 'API Reference', href: 'https://docs.svantic.com/api-reference/openapi', external: true },
     ],
   },
   {
