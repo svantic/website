@@ -18,9 +18,9 @@ const PRICING_TIERS = [
     cta_href: 'https://app.svantic.com/signup',
     highlighted: false,
     limits: {
-      compute_units: '50 CU/month',
-      compute_tokens: '(5M tokens)',
-      sessions: '5 concurrent sessions',
+      compute_units: '25 CU/month',
+      compute_tokens: '(2.5M tokens)',
+      sessions: '3 concurrent sessions',
       retention: '7-day trace retention',
       overage: 'Upgrade to continue',
     },
@@ -28,47 +28,47 @@ const PRICING_TIERS = [
   {
     name: 'Pro',
     description: 'For teams building production workflows.',
-    price: '$149',
+    price: '$199',
     period: '/month',
     cta: 'Start Free Trial',
     cta_href: 'https://app.svantic.com/signup?plan=pro',
     highlighted: true,
     badge: 'Most Popular',
     limits: {
-      compute_units: '200 CU/month',
-      compute_tokens: '(20M tokens)',
-      sessions: '25 concurrent sessions',
+      compute_units: '100 CU/month',
+      compute_tokens: '(10M tokens)',
+      sessions: '15 concurrent sessions',
       retention: '30-day trace retention',
-      overage: '$0.20/CU overage',
+      overage: '$0.30/CU overage',
     },
   },
   {
     name: 'Team',
     description: 'For organizations scaling AI automation.',
-    price: '$499',
+    price: '$699',
     period: '/month',
     cta: 'Start Free Trial',
     cta_href: 'https://app.svantic.com/signup?plan=team',
     highlighted: false,
     limits: {
-      compute_units: '1,000 CU/month',
-      compute_tokens: '(100M tokens)',
-      sessions: '100 concurrent sessions',
+      compute_units: '500 CU/month',
+      compute_tokens: '(50M tokens)',
+      sessions: '50 concurrent sessions',
       retention: '90-day trace retention',
-      overage: '$0.15/CU overage',
+      overage: '$0.25/CU overage',
     },
   },
   {
     name: 'Enterprise',
     description: 'Custom solutions for large deployments.',
-    price: 'Custom',
-    period: '',
+    price: '$2,500',
+    period: '/month+',
     cta: 'Contact Sales',
     cta_href: '/contact?plan=enterprise',
     highlighted: false,
     limits: {
-      compute_units: '5,000+ CU/month',
-      compute_tokens: '(500M+ tokens)',
+      compute_units: '2,500+ CU/month',
+      compute_tokens: '(250M+ tokens)',
       sessions: 'Unlimited sessions',
       retention: 'Custom retention',
       overage: 'Volume discounts',
@@ -90,7 +90,7 @@ const INCLUDED_FEATURES = [
 const FAQ_ITEMS = [
   {
     question: 'What is a Compute Unit (CU)?',
-    answer: 'A Compute Unit represents 100,000 tokens of AI processing. This includes reasoning, planning, knowledge retrieval, and tool coordination. Simple tasks like answering a question use ~0.5 CU, while complex tasks like processing a multi-page document may use 10-50 CU.',
+    answer: 'A Compute Unit represents 100,000 tokens of AI processing. This includes reasoning, planning, knowledge retrieval, and tool coordination. Simple tasks like answering a question use ~0.3 CU, while complex tasks like processing a multi-page document or navigating a web portal may use 2-10 CU.',
   },
   {
     question: 'What counts as a concurrent session?',
@@ -98,7 +98,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What happens if I exceed my Compute Units?',
-    answer: "On Free, you'll be prompted to upgrade. On Pro and Team, overage is billed at the rates shown ($0.20/CU for Pro, $0.15/CU for Team). You can set spending alerts and caps in your dashboard to control costs.",
+    answer: "On Free, you'll be prompted to upgrade. On Pro and Team, overage is billed at the rates shown ($0.30/CU for Pro, $0.25/CU for Team). You can set spending alerts and caps in your dashboard to control costs.",
   },
   {
     question: 'Is there really no limit on agents or storage?',
@@ -110,7 +110,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What does Enterprise pricing look like?',
-    answer: 'Enterprise starts at $2,000/month with 5,000+ CU included and volume discounts on overage. We offer custom SLAs, dedicated infrastructure, and compliance features. Contact sales for a quote.',
+    answer: 'Enterprise starts at $2,500/month with 2,500 CU included and volume discounts on overage (as low as $0.15/CU). We offer custom SLAs, dedicated infrastructure, and compliance features. Contact sales for a quote.',
   },
 ];
 
