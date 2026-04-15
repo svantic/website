@@ -12,13 +12,13 @@ import {
 
 const QUESTIONS = [
   {
-    id: 'navigation',
-    question: 'How complex are the navigation paths in your process?',
+    id: 'determinism',
+    question: 'Can your process be fully scripted in advance?',
     options: [
-      { label: 'Simple and linear — A to B to C', score: 0 },
-      { label: 'Some branching based on clear rules', score: 1 },
-      { label: 'Conditional hops that vary by case', score: 2 },
-      { label: 'Complex paths that are nearly impossible to map deterministically', score: 3 },
+      { label: 'Yes — we could write a script that handles everything', score: 0 },
+      { label: 'Mostly — with some exception handling', score: 1 },
+      { label: 'Partially — too many branches to script completely', score: 2 },
+      { label: 'No — impossible to anticipate all scenarios', score: 3 },
     ],
   },
   {
@@ -38,7 +38,7 @@ const QUESTIONS = [
       { label: 'Standardized — same patterns every time', score: 0 },
       { label: 'Mostly standard with occasional exceptions', score: 1 },
       { label: 'Many variations that require different approaches', score: 2 },
-      { label: 'Every case is different — long tail of edge cases', score: 3 },
+      { label: 'Every case is different — long tail of variations', score: 3 },
     ],
   },
   {
@@ -52,13 +52,13 @@ const QUESTIONS = [
     ],
   },
   {
-    id: 'determinism',
-    question: 'Can your process be fully scripted in advance?',
+    id: 'context',
+    question: 'Does the right action depend on gathering information first?',
     options: [
-      { label: 'Yes — we could write a script that handles everything', score: 0 },
-      { label: 'Mostly — with some exception handling', score: 1 },
-      { label: 'Partially — too many branches to script completely', score: 2 },
-      { label: 'No — impossible to anticipate all scenarios', score: 3 },
+      { label: 'No — we know what to do upfront', score: 0 },
+      { label: 'Sometimes — a few lookups needed', score: 1 },
+      { label: 'Often — need to assemble context from multiple sources', score: 2 },
+      { label: 'Always — cannot act without understanding the full picture', score: 3 },
     ],
   },
   {

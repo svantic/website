@@ -13,19 +13,19 @@ import {
 
 const PROBLEM_PATTERNS = [
   {
-    slug: 'complex-navigation',
-    title: 'Complex Navigation Paths',
-    subtitle: 'When deterministic scripting breaks down',
-    description: "Your process has conditional hops, branching paths, and context-dependent navigation that make it nearly impossible to automate with static scripts. What happens next depends on what you find.",
-    examples: ['Multi-step form workflows', 'Portal navigation', 'Data gathering across systems', 'Exception handling flows', 'Approval chains'],
+    slug: 'non-deterministic',
+    title: 'Non-Deterministic Processes',
+    subtitle: 'When you cannot script the steps in advance',
+    description: "Your process has conditional branches and dependencies that make it impossible to predetermine the exact sequence. What happens next depends on what you find along the way.",
+    examples: ['Multi-step workflows', 'Exception handling', 'Approval chains', 'Data gathering', 'Case resolution'],
     color: '#8b5cf6',
   },
   {
     slug: 'context-decisions',
     title: 'Context-Dependent Decisions',
     subtitle: 'When rules alone are not enough',
-    description: "The right action depends on assembling context from multiple sources. You can't write an if/else tree that covers every scenario — judgment is required based on what you discover.",
-    examples: ['Loan underwriting', 'Claims adjudication', 'Support ticket resolution', 'Compliance checks', 'Risk assessment'],
+    description: "The right action depends on assembling context from multiple sources. You cannot write an if/else tree that covers every scenario — judgment is required based on what you discover.",
+    examples: ['Underwriting', 'Claims adjudication', 'Ticket resolution', 'Compliance checks', 'Risk assessment'],
     color: '#0ea5e9',
   },
   {
@@ -33,25 +33,25 @@ const PROBLEM_PATTERNS = [
     title: 'Tasks That Should Get Easier',
     subtitle: 'When patterns should compound',
     description: "You process the same type of task repeatedly — each instance slightly different. The 1000th should be easier than the 1st. Patterns should be recognized. Exceptions should be learned.",
-    examples: ['Document processing', 'Application intake', 'Invoice reconciliation', 'Data extraction', 'Record retrieval'],
+    examples: ['Document processing', 'Application intake', 'Reconciliation', 'Data extraction', 'Record retrieval'],
     color: '#10b981',
   },
   {
-    slug: 'unpredictable-inputs',
-    title: 'Long Tail of Edge Cases',
+    slug: 'edge-cases',
+    title: 'Long Tail of Variations',
     subtitle: 'When every case is different',
-    description: "Your inputs vary wildly. New formats appear. Edge cases multiply. Static templates break on the first exception. You need something that adapts rather than fails.",
-    examples: ['Multi-format documents', 'Varied data sources', 'Unstructured inputs', 'Legacy system outputs', 'Partner integrations'],
+    description: "Your inputs vary. New scenarios appear. Edge cases multiply. Static rules break on the first exception. You need something that adapts rather than fails.",
+    examples: ['Varied inputs', 'Multiple formats', 'Unstructured data', 'Cross-system data', 'Partner integrations'],
     color: '#f59e0b',
   },
 ];
 
 const GOOD_FIT = [
-  'Your process has complex navigation paths with conditional hops',
+  'Your process has conditional branches that cannot be fully scripted in advance',
   'Decisions require assembling context from multiple sources',
-  'You need to take action based on what you discover, not predetermined rules',
+  'The right action depends on what you discover, not predetermined rules',
   'The same task type repeats — and should get easier over time',
-  'You face a long tail of edge cases that break static automation',
+  'You face a long tail of variations that break static automation',
   'You need audit trails to understand what happened and why',
 ];
 
