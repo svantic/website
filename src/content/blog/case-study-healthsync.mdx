@@ -1,0 +1,162 @@
+---
+title: "Case Study: How HealthSync Cut Claims Processing Time by 75%"
+excerpt: "HealthSync processes 2M+ insurance claims monthly. Here's how they deployed Svantic to automate document intake, validation, and routing while maintaining HIPAA compliance."
+author: "Emily Rodriguez"
+date: "2026-03-28"
+category: "Case Studies"
+read_time: "6 min read"
+---
+
+HealthSync is a healthcare technology company that processes over 2 million insurance claims per month for regional health systems. When they came to us, their manual review bottleneck was costing them $4.2M annually in labor and delays.
+
+Here's how they deployed Svantic to automate 85% of their claims processing while maintaining strict HIPAA compliance.
+
+## The Challenge
+
+HealthSync's claims processing pipeline looked like this:
+
+1. **Intake**: Claims arrive via fax, email, portal, or EDI
+2. **Digitization**: Paper claims are scanned and OCR'd
+3. **Validation**: Data is checked against member records
+4. **Routing**: Clean claims go to adjudication; exceptions go to reviewers
+5. **Follow-up**: Missing information requests are sent to providers
+
+The bottleneck was steps 2-4. Human reviewers were:
+
+- Re-keying data from scanned documents
+- Manually cross-referencing member databases
+- Making routing decisions based on tribal knowledge
+
+Average processing time: **4.2 days** per claim. Error rate: **12%**. Cost: **$3.50** per claim.
+
+## The Solution
+
+HealthSync deployed three Svantic agents:
+
+### 1. Document Intake Agent
+
+Monitors all intake channels and normalizes documents:
+
+```typescript
+agent.define_capability({
+  name: 'ingest_claim',
+  handler: async ({ source, document }) => {
+    const normalized = await normalize_document(document);
+    const claim_type = await classify_claim(normalized);
+    return { document_id: normalized.id, claim_type };
+  }
+});
+```
+
+The agent handles PDFs, images, faxes, and EDI files. Classification accuracy: 98.7%.
+
+### 2. Validation Agent
+
+Extracts structured data and validates against member records:
+
+```typescript
+agent.define_capability({
+  name: 'validate_claim',
+  handler: async ({ document_id }) => {
+    const fields = await extract_fields(document_id);
+    const member = await member_db.lookup(fields.member_id);
+    const discrepancies = validate_against_member(fields, member);
+    return { fields, member, discrepancies };
+  }
+});
+```
+
+The Knowledge Store remembers document layouts — a UnitedHealthcare EOB is processed differently than an Aetna claim form, and the agent learns these patterns.
+
+### 3. Routing Agent
+
+Makes routing decisions based on validation results:
+
+```typescript
+agent.define_capability({
+  name: 'route_claim',
+  handler: async ({ document_id, validation_result }) => {
+    if (validation_result.discrepancies.length === 0) {
+      return { route: 'auto_adjudication', confidence: 0.99 };
+    }
+    
+    const severity = assess_discrepancy_severity(validation_result.discrepancies);
+    if (severity === 'low') {
+      return { route: 'auto_adjudication', note: 'minor_discrepancies' };
+    }
+    
+    return { 
+      route: 'human_review', 
+      reviewer_queue: select_queue(validation_result),
+      priority: severity === 'high' ? 'urgent' : 'normal'
+    };
+  }
+});
+```
+
+Routing decisions are governed by policies defined in Svantic's guardrails:
+
+```yaml
+policy:
+  name: claims_routing
+  rules:
+    - if: claim_amount > 50000
+      then: require_human_review
+    - if: member_status == "new"
+      then: flag_for_verification
+    - if: provider_not_in_network
+      then: route_to_out_of_network_queue
+```
+
+## HIPAA Compliance
+
+Healthcare data requires strict compliance. Svantic's architecture made this possible:
+
+**Data Sovereignty**: All agents run on HealthSync's infrastructure. PHI never leaves their environment.
+
+**Audit Trails**: Every agent action is logged with full trace context. HealthSync can answer "what happened to claim X?" in seconds.
+
+**Access Control**: Role-based policies restrict which agents can access which data. The routing agent can read member status but not medical history.
+
+**Encryption**: All data at rest is encrypted. All agent-to-mesh communication is TLS 1.3.
+
+## Results
+
+After 90 days in production:
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Processing time | 4.2 days | 1.1 days | **75% reduction** |
+| Error rate | 12% | 2.1% | **82% reduction** |
+| Cost per claim | $3.50 | $0.85 | **76% reduction** |
+| Auto-adjudication rate | 34% | 85% | **2.5x increase** |
+
+Annual savings: **$5.3M** (labor reduction + error cost avoidance + faster payments).
+
+## The Knowledge Store Effect
+
+The most interesting result was the Knowledge Store's impact over time:
+
+- **Month 1**: 72% auto-adjudication rate
+- **Month 2**: 79% auto-adjudication rate  
+- **Month 3**: 85% auto-adjudication rate
+
+The agents learned document layouts, provider patterns, and edge cases. Each month, more claims were processed automatically.
+
+HealthSync's VP of Operations: "The system gets smarter every week. Edge cases that required human review in month one are handled automatically by month three."
+
+## What's Next
+
+HealthSync is expanding their Svantic deployment:
+
+1. **Provider communication agent**: Automated follow-up for missing information
+2. **Appeals processing**: Handling denied claim appeals
+3. **Fraud detection**: Anomaly detection across claim patterns
+
+## Get Started
+
+If you're processing documents at scale in a regulated industry, we'd love to talk.
+
+- [Schedule a demo](/contact)
+- [Read the compliance documentation](https://docs.svantic.com/security)
+- [Explore document processing use cases](/use-cases/document-processing)

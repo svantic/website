@@ -1,0 +1,196 @@
+---
+title: "Why Agent Observability Is Different (And Harder)"
+excerpt: "Traditional APM tools weren't built for AI agents. Here's what makes agent observability uniquely challenging and how we approached it."
+author: "Chris Wang"
+date: "2026-03-25"
+category: "Engineering"
+read_time: "8 min read"
+---
+
+You've deployed AI agents to production. They're processing real workloads. Something goes wrong.
+
+How do you debug it?
+
+If you've tried using traditional observability tools (Datadog, New Relic, Prometheus) for AI agents, you've felt the pain. These tools are great for deterministic systems. Agents are fundamentally different.
+
+## What Makes Agents Different
+
+### 1. Non-Deterministic Behavior
+
+Traditional services: same input → same output.
+
+Agents: same input → potentially different outputs, different tool calls, different reasoning paths.
+
+When an agent fails, you can't just replay the request. You need to understand the entire decision chain.
+
+### 2. Multi-Turn Interactions
+
+A REST API call is a single request/response. An agent session might involve:
+
+- 15 LLM calls
+- 8 tool invocations
+- 3 sub-agent delegations
+- 40+ internal state transitions
+
+The "trace" isn't a simple waterfall — it's a tree (or even a DAG).
+
+### 3. Hidden Reasoning
+
+The most important information is often invisible. Why did the agent choose tool A over tool B? Why did it retry? What context influenced the decision?
+
+Traditional traces show what happened. Agent traces need to show why.
+
+### 4. Cost Attribution
+
+Agent operations have variable costs. An LLM call might cost $0.001 or $0.10 depending on context size. A workflow might make 5 LLM calls or 50.
+
+You need cost visibility at every level: per-session, per-agent, per-capability, per-customer.
+
+## What We Built
+
+Svantic's observability layer was designed for agents from day one.
+
+### Hierarchical Traces
+
+Every session generates a trace tree:
+
+```
+Session: "Process invoice batch"
+├── Agent: invoice-processor
+│   ├── LLM Call: classify_documents (1,200 tokens, 890ms)
+│   ├── Tool Call: download_file (45ms)
+│   ├── LLM Call: extract_fields (3,400 tokens, 1,240ms)
+│   └── Sub-Agent: validation-agent
+│       ├── Tool Call: lookup_vendor (120ms)
+│       └── LLM Call: validate_data (800 tokens, 450ms)
+├── Agent: routing-agent
+│   └── LLM Call: determine_route (600 tokens, 320ms)
+└── Summary: 6 operations, 6,000 tokens, 3.1s total
+```
+
+You can drill down from session to agent to individual operation.
+
+### Decision Context
+
+For every LLM call, we capture:
+
+- **Input context**: What the model saw (with PII redaction options)
+- **Output**: What the model produced
+- **Alternatives considered**: If the agent had multiple options, what were they?
+- **Confidence scores**: How certain was the decision?
+- **Knowledge Store hits**: Did we use cached patterns?
+
+This lets you answer "why did it do that?" without guessing.
+
+### Cost Tracking
+
+Every trace includes cost attribution:
+
+```json
+{
+  "session_id": "sess_abc123",
+  "total_cost_usd": 0.0847,
+  "breakdown": {
+    "llm_tokens": { "input": 12400, "output": 2100, "cost": 0.0732 },
+    "tool_calls": { "count": 8, "cost": 0.0045 },
+    "storage": { "bytes": 45000, "cost": 0.0001 },
+    "orchestration": { "messages": 12, "cost": 0.0069 }
+  },
+  "by_agent": {
+    "invoice-processor": 0.0521,
+    "validation-agent": 0.0198,
+    "routing-agent": 0.0128
+  }
+}
+```
+
+Roll up costs by customer, by workflow, by time period.
+
+### Anomaly Detection
+
+We baseline "normal" behavior and alert on deviations:
+
+- Token usage 3x higher than usual? Alert.
+- Latency P95 doubled? Alert.
+- Success rate dropped from 97% to 85%? Alert.
+- New error type appearing? Alert.
+
+Anomaly detection is trained on your specific patterns — not generic thresholds.
+
+### Replay and Debugging
+
+When something goes wrong, you can:
+
+1. **Inspect the trace**: See exactly what happened, step by step
+2. **View the context**: See what the agent "saw" at each decision point
+3. **Compare to successful runs**: Find what's different
+4. **Replay with modifications**: Test a fix without deploying
+
+## OpenTelemetry Integration
+
+We're not trying to replace your existing observability stack. Svantic exports traces in OpenTelemetry format:
+
+```typescript
+import { configure_observability } from '@svantic/sdk';
+
+configure_observability({
+  export: {
+    otlp: { endpoint: 'https://your-collector.example.com' },
+    datadog: { api_key: process.env.DD_API_KEY },
+  },
+  sampling: { rate: 1.0 }, // Sample everything in production
+  redaction: {
+    pii_patterns: ['email', 'phone', 'ssn'],
+    fields: ['customer_name', 'account_number']
+  }
+});
+```
+
+Your Datadog/Grafana/Honeycomb dashboards can include agent traces alongside your existing infrastructure metrics.
+
+## Practical Debugging
+
+Here's a real debugging session:
+
+**Symptom**: Customer reports invoice processing is slow.
+
+**Step 1**: Check the dashboard. P95 latency is 8.2s (normally 2.1s).
+
+**Step 2**: Drill into recent traces. Find one that took 9.1s.
+
+**Step 3**: Expand the trace tree:
+- `classify_documents`: 890ms ✓
+- `extract_fields`: 6,200ms ✗ (usually 1,200ms)
+- `validate_data`: 450ms ✓
+
+**Step 4**: Inspect `extract_fields`:
+- Input: 12-page document (usually 2-3 pages)
+- LLM calls: 5 (usually 1)
+- Token usage: 34,000 (usually 3,000)
+
+**Step 5**: Root cause identified — large document triggered multiple extraction passes.
+
+**Step 6**: Fix — add chunking strategy for documents >5 pages.
+
+Total debug time: 4 minutes.
+
+## Retention and Compliance
+
+Trace data can be sensitive. We support:
+
+- **Configurable retention**: Keep traces for 7 days, 30 days, or custom
+- **PII redaction**: Automatic or rule-based redaction before storage
+- **Export controls**: Restrict who can export raw traces
+- **Compliance modes**: HIPAA, SOC 2, GDPR-compliant configurations
+
+## Get Started
+
+Agent observability is enabled by default in Svantic. Your first trace is captured automatically when you run your first session.
+
+To explore:
+
+1. Open the Svantic Dashboard
+2. Navigate to Traces
+3. Click any session to see the full trace tree
+
+[Read the observability documentation →](https://docs.svantic.com/observability)
