@@ -35,7 +35,6 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: 'Features', href: '/features' },
       { label: 'How It Works', href: '/how-it-works' },
-      { label: 'Pricing', href: '/pricing' },
     ],
   },
   {
@@ -43,13 +42,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/use-cases',
   },
   {
-    label: 'Resources',
-    children: [
-      { label: 'Documentation', href: 'https://docs.svantic.com', external: true },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Changelog', href: '/changelog' },
-      { label: 'API Reference', href: 'https://docs.svantic.com/api-reference/openapi', external: true },
-    ],
+    label: 'Pricing',
+    href: '/pricing',
+  },
+  {
+    label: 'Blog',
+    href: '/blog',
   },
   {
     label: 'Company',

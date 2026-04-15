@@ -114,11 +114,11 @@ function Hero() {
           </Typography>
           <Button
             component={Link}
-            href="/use-cases/fit"
+            href="/contact"
             variant="contained"
             sx={{ bgcolor: BRAND_PRIMARY, fontWeight: 600, borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { bgcolor: BRAND_PRIMARY_HOVER } }}
           >
-            Is Svantic Right For You?
+            Talk to Us
           </Button>
         </Box>
       </Container>
@@ -295,30 +295,20 @@ function CTA() {
     <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, background: `linear-gradient(180deg, ${CODE_BG} 0%, #0f172a 100%)`, textAlign: 'center' }}>
       <Container maxWidth="md">
         <Typography variant="h2" sx={{ color: '#f8fafc', mb: 3 }}>
-          Not sure if Svantic fits?
+          Have questions?
         </Typography>
         <Typography sx={{ color: 'rgba(248,250,252,0.65)', fontSize: '1.1rem', mb: 5, maxWidth: 500, mx: 'auto' }}>
-          Take our quick assessment or talk to us. We'll be honest about whether your workflow is a good fit.
+          Talk to us about your workflow. We'll be honest about whether Svantic is a good fit.
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Button
-            component={Link}
-            href="/use-cases/fit"
-            variant="contained"
-            endIcon={<ArrowForwardIcon />}
-            sx={{ bgcolor: BRAND_PRIMARY, fontWeight: 600, borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { bgcolor: BRAND_PRIMARY_HOVER } }}
-          >
-            Take the Assessment
-          </Button>
-          <Button
-            component={Link}
-            href="/contact"
-            variant="outlined"
-            sx={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { borderColor: 'rgba(255,255,255,0.4)' } }}
-          >
-            Talk to Us
-          </Button>
-        </Box>
+        <Button
+          component={Link}
+          href="/contact"
+          variant="contained"
+          endIcon={<ArrowForwardIcon />}
+          sx={{ bgcolor: BRAND_PRIMARY, fontWeight: 600, borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { bgcolor: BRAND_PRIMARY_HOVER } }}
+        >
+          Contact Us
+        </Button>
       </Container>
     </Box>
   );

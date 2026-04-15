@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Button, Container, Grid2, TextField, Typography, MenuItem } from '@mui/material';
+import { Box, Button, Container, Grid2, TextField, Typography, MenuItem, Alert } from '@mui/material';
 import {
   BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
   SURFACE, CARD, BORDER,
@@ -31,21 +31,46 @@ export default function ContactPage() {
     reason: '',
     message: '',
   });
+  const [status, set_status] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
   const handle_change = (e: React.ChangeEvent<HTMLInputElement>) => {
     set_form_data({ ...form_data, [e.target.name]: e.target.value });
   };
 
-  const handle_submit = (e: React.FormEvent) => {
+  const handle_submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', form_data);
+    set_status('submitting');
+
+    try {
+      const response = await fetch('https://formspree.io/f/xpwzgvqk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form_data.name,
+          email: form_data.email,
+          company: form_data.company,
+          reason: form_data.reason,
+          message: form_data.message,
+        }),
+      });
+
+      if (response.ok) {
+        set_status('success');
+        set_form_data({ name: '', email: '', company: '', reason: '', message: '' });
+      } else {
+        set_status('error');
+      }
+    } catch {
+      set_status('error');
+    }
   };
 
   return (
     <>
       <Hero />
-      <ContactForm form_data={form_data} handle_change={handle_change} handle_submit={handle_submit} />
+      <ContactForm form_data={form_data} handle_change={handle_change} handle_submit={handle_submit} status={status} />
       <Locations />
     </>
   );
@@ -81,10 +106,12 @@ function ContactForm({
   form_data,
   handle_change,
   handle_submit,
+  status,
 }: {
   form_data: any;
   handle_change: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handle_submit: (e: React.FormEvent) => void;
+  status: 'idle' | 'submitting' | 'success' | 'error';
 }) {
   return (
     <Box sx={{ width: '100%', py: { xs: 8, md: 12 }, bgcolor: SURFACE }}>
@@ -105,6 +132,18 @@ function ContactForm({
                 Send us a message
               </Typography>
 
+              {status === 'success' && (
+                <Alert severity="success" sx={{ mb: 3 }}>
+                  Thanks for reaching out! We'll get back to you shortly.
+                </Alert>
+              )}
+
+              {status === 'error' && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  Something went wrong. Please try again or email us directly.
+                </Alert>
+              )}
+
               <Grid2 container spacing={3}>
                 <Grid2 size={{ xs: 12, sm: 6 }}>
                   <TextField
@@ -114,6 +153,7 @@ function ContactForm({
                     value={form_data.name}
                     onChange={handle_change}
                     required
+                    disabled={status === 'submitting'}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                   />
                 </Grid2>
@@ -126,6 +166,7 @@ function ContactForm({
                     value={form_data.email}
                     onChange={handle_change}
                     required
+                    disabled={status === 'submitting'}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                   />
                 </Grid2>
@@ -136,6 +177,7 @@ function ContactForm({
                     name="company"
                     value={form_data.company}
                     onChange={handle_change}
+                    disabled={status === 'submitting'}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                   />
                 </Grid2>
@@ -148,6 +190,7 @@ function ContactForm({
                     value={form_data.reason}
                     onChange={handle_change}
                     required
+                    disabled={status === 'submitting'}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                   >
                     {CONTACT_REASONS.map((reason) => (
@@ -167,6 +210,7 @@ function ContactForm({
                     value={form_data.message}
                     onChange={handle_change}
                     required
+                    disabled={status === 'submitting'}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
                   />
                 </Grid2>
@@ -175,6 +219,7 @@ function ContactForm({
                     type="submit"
                     variant="contained"
                     size="large"
+                    disabled={status === 'submitting'}
                     sx={{
                       bgcolor: BRAND_PRIMARY,
                       fontWeight: 600,
@@ -185,7 +230,7 @@ function ContactForm({
                       '&:hover': { bgcolor: BRAND_PRIMARY_HOVER },
                     }}
                   >
-                    Send Message
+                    {status === 'submitting' ? 'Sending...' : 'Send Message'}
                   </Button>
                 </Grid2>
               </Grid2>

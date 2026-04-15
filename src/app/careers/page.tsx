@@ -1,30 +1,16 @@
 'use client';
 
 import { Box, Button, Container, Grid2, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
 import {
-  BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
-  SURFACE, CARD, BORDER, CODE_BG, EMERALD,
+  BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY,
+  SURFACE, CARD, BORDER, CODE_BG,
 } from '@/theme/theme';
-
-
-const BENEFITS = [
-  { title: 'Competitive Salary', description: 'Top-of-market compensation with equity' },
-  { title: 'Remote-First', description: 'Work from anywhere in the US, UK, or EU' },
-  { title: 'Health & Wellness', description: 'Full medical, dental, and vision coverage' },
-  { title: 'Unlimited PTO', description: 'Take the time you need to recharge' },
-  { title: 'Learning Budget', description: '$2,000/year for courses, conferences, and books' },
-  { title: 'Home Office', description: '$1,500 setup budget for your workspace' },
-  { title: '401(k) Match', description: '4% employer match on retirement contributions' },
-  { title: 'Parental Leave', description: '16 weeks paid leave for all parents' },
-];
 
 export default function CareersPage() {
   return (
     <>
       <Hero />
       <WhyJoin />
-      <Benefits />
       <CTA />
     </>
   );
@@ -116,41 +102,6 @@ function WhyJoin() {
   );
 }
 
-function Benefits() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: SURFACE, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
-            Benefits
-          </Typography>
-          <Typography variant="h2" sx={{ color: TEXT_PRIMARY }}>
-            We take care of our team.
-          </Typography>
-        </Box>
-
-        <Grid2 container spacing={3}>
-          {BENEFITS.map((benefit, i) => (
-            <Grid2 key={benefit.title} size={{ xs: 12, sm: 6, md: 3 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.05 }}
-              >
-                <Box sx={{ p: 3, borderRadius: '12px', bgcolor: CARD, border: `1px solid ${BORDER}`, height: '100%' }}>
-                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '1rem', mb: 1 }}>{benefit.title}</Typography>
-                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', lineHeight: 1.6 }}>{benefit.description}</Typography>
-                </Box>
-              </motion.div>
-            </Grid2>
-          ))}
-        </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
 function CTA() {
   return (
     <Box
@@ -163,7 +114,7 @@ function CTA() {
     >
       <Container maxWidth="md">
         <Typography variant="h2" sx={{ color: '#f8fafc', mb: 3 }}>
-          Don't see the right role?
+          Work with us.
         </Typography>
         <Typography sx={{ color: 'rgba(248,250,252,0.65)', fontSize: '1.1rem', mb: 5, maxWidth: 500, mx: 'auto' }}>
           We're always looking for exceptional people. Send us your resume and tell us what you'd like to work on.
