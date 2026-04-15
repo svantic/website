@@ -1,22 +1,12 @@
 'use client';
 
-import { Box, Button, Container, Grid2, Typography, Chip } from '@mui/material';
+import { Box, Button, Container, Grid2, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
   BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
   SURFACE, CARD, BORDER, CODE_BG, EMERALD,
 } from '@/theme/theme';
 
-const OPEN_POSITIONS = [
-  { title: 'Senior Backend Engineer', team: 'Engineering', location: 'Remote', type: 'Full-time' },
-  { title: 'Staff ML Engineer', team: 'AI/ML', location: 'San Francisco', type: 'Full-time' },
-  { title: 'Frontend Engineer', team: 'Engineering', location: 'Remote', type: 'Full-time' },
-  { title: 'DevOps Engineer', team: 'Infrastructure', location: 'Remote', type: 'Full-time' },
-  { title: 'Product Manager', team: 'Product', location: 'San Francisco', type: 'Full-time' },
-  { title: 'Technical Writer', team: 'Developer Experience', location: 'Remote', type: 'Full-time' },
-  { title: 'Solutions Engineer', team: 'Sales', location: 'New York', type: 'Full-time' },
-  { title: 'Customer Success Manager', team: 'Customer Success', location: 'Remote', type: 'Full-time' },
-];
 
 const BENEFITS = [
   { title: 'Competitive Salary', description: 'Top-of-market compensation with equity' },
@@ -35,7 +25,6 @@ export default function CareersPage() {
       <Hero />
       <WhyJoin />
       <Benefits />
-      <Positions />
       <CTA />
     </>
   );
@@ -157,67 +146,6 @@ function Benefits() {
             </Grid2>
           ))}
         </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
-function Positions() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: CARD, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
-            Open Positions
-          </Typography>
-          <Typography variant="h2" sx={{ color: TEXT_PRIMARY }}>
-            Join the team.
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {OPEN_POSITIONS.map((position, i) => (
-            <motion.div
-              key={position.title}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-            >
-              <Box
-                component="a"
-                href={`/careers/${position.title.toLowerCase().replace(/ /g, '-')}`}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  p: 3,
-                  borderRadius: '12px',
-                  bgcolor: SURFACE,
-                  border: `1px solid ${BORDER}`,
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                  flexWrap: 'wrap',
-                  gap: 2,
-                  '&:hover': {
-                    borderColor: BRAND_PRIMARY,
-                    bgcolor: `${BRAND_PRIMARY}05`,
-                  },
-                }}
-              >
-                <Box>
-                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '1.05rem', mb: 0.5 }}>{position.title}</Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip label={position.team} size="small" sx={{ bgcolor: `${BRAND_PRIMARY}10`, color: BRAND_PRIMARY, fontWeight: 500 }} />
-                    <Chip label={position.location} size="small" sx={{ bgcolor: CARD, border: `1px solid ${BORDER}`, fontWeight: 500 }} />
-                    <Chip label={position.type} size="small" sx={{ bgcolor: CARD, border: `1px solid ${BORDER}`, fontWeight: 500 }} />
-                  </Box>
-                </Box>
-                <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 600, fontSize: '0.9rem' }}>Apply →</Typography>
-              </Box>
-            </motion.div>
-          ))}
-        </Box>
       </Container>
     </Box>
   );
