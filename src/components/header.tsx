@@ -11,25 +11,36 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY, BORDER } from '@/theme/theme';
 
-const NAV_ITEMS = [
+interface NavChild {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+interface NavItemWithChildren {
+  label: string;
+  children: NavChild[];
+}
+
+interface NavItemDirect {
+  label: string;
+  href: string;
+}
+
+type NavItem = NavItemWithChildren | NavItemDirect;
+
+const NAV_ITEMS: NavItem[] = [
   {
     label: 'Product',
     children: [
       { label: 'Features', href: '/features' },
       { label: 'How It Works', href: '/how-it-works' },
-      { label: 'Use Cases', href: '/use-cases' },
-      { label: 'Is It Right For You?', href: '/use-cases/fit' },
       { label: 'Pricing', href: '/pricing' },
     ],
   },
   {
-    label: 'Solutions',
-    children: [
-      { label: 'Customer Support', href: '/use-cases/customer-support' },
-      { label: 'DevOps & CI/CD', href: '/use-cases/devops' },
-      { label: 'Document Processing', href: '/use-cases/document-processing' },
-      { label: 'Compliance & Audit', href: '/use-cases/compliance' },
-    ],
+    label: 'Use Cases',
+    href: '/use-cases',
   },
   {
     label: 'Resources',
@@ -94,53 +105,72 @@ export function Header() {
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, ml: 5, gap: 0.5 }}>
               {NAV_ITEMS.map((item) => (
                 <Box key={item.label}>
-                  <Button
-                    onClick={(e) => handle_menu_open(item.label, e)}
-                    endIcon={<KeyboardArrowDownIcon sx={{ fontSize: '1rem !important' }} />}
-                    sx={{
-                      color: TEXT_SECONDARY,
-                      fontWeight: 500,
-                      fontSize: '0.9rem',
-                      textTransform: 'none',
-                      px: 2,
-                      '&:hover': { color: TEXT_PRIMARY, bgcolor: 'transparent' },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                  <Menu
-                    anchorEl={anchor_el[item.label]}
-                    open={Boolean(anchor_el[item.label])}
-                    onClose={() => handle_menu_close(item.label)}
-                    sx={{
-                      '& .MuiPaper-root': {
-                        mt: 1,
-                        borderRadius: '12px',
-                        border: `1px solid ${BORDER}`,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                        minWidth: 180,
-                      },
-                    }}
-                  >
-                    {item.children.map((child) => (
-                      <MenuItem
-                        key={child.label}
-                        onClick={() => handle_menu_close(item.label)}
-                        component={child.external ? 'a' : Link}
-                        href={child.href}
-                        target={child.external ? '_blank' : undefined}
+                  {'children' in item ? (
+                    <>
+                      <Button
+                        onClick={(e) => handle_menu_open(item.label, e)}
+                        endIcon={<KeyboardArrowDownIcon sx={{ fontSize: '1rem !important' }} />}
                         sx={{
-                          fontSize: '0.9rem',
                           color: TEXT_SECONDARY,
-                          py: 1.25,
-                          px: 2.5,
-                          '&:hover': { color: TEXT_PRIMARY, bgcolor: `${BRAND_PRIMARY}08` },
+                          fontWeight: 500,
+                          fontSize: '0.9rem',
+                          textTransform: 'none',
+                          px: 2,
+                          '&:hover': { color: TEXT_PRIMARY, bgcolor: 'transparent' },
                         }}
                       >
-                        {child.label}
-                      </MenuItem>
-                    ))}
-                  </Menu>
+                        {item.label}
+                      </Button>
+                      <Menu
+                        anchorEl={anchor_el[item.label]}
+                        open={Boolean(anchor_el[item.label])}
+                        onClose={() => handle_menu_close(item.label)}
+                        sx={{
+                          '& .MuiPaper-root': {
+                            mt: 1,
+                            borderRadius: '12px',
+                            border: `1px solid ${BORDER}`,
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            minWidth: 180,
+                          },
+                        }}
+                      >
+                        {(item as NavItemWithChildren).children.map((child) => (
+                          <MenuItem
+                            key={child.label}
+                            onClick={() => handle_menu_close(item.label)}
+                            component={child.external ? 'a' : Link}
+                            href={child.href}
+                            target={child.external ? '_blank' : undefined}
+                            sx={{
+                              fontSize: '0.9rem',
+                              color: TEXT_SECONDARY,
+                              py: 1.25,
+                              px: 2.5,
+                              '&:hover': { color: TEXT_PRIMARY, bgcolor: `${BRAND_PRIMARY}08` },
+                            }}
+                          >
+                            {child.label}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </>
+                  ) : (
+                    <Button
+                      component={Link}
+                      href={(item as NavItemDirect).href}
+                      sx={{
+                        color: TEXT_SECONDARY,
+                        fontWeight: 500,
+                        fontSize: '0.9rem',
+                        textTransform: 'none',
+                        px: 2,
+                        '&:hover': { color: TEXT_PRIMARY, bgcolor: 'transparent' },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  )}
                 </Box>
               ))}
             </Box>
@@ -226,28 +256,45 @@ export function Header() {
           <List>
             {NAV_ITEMS.map((item) => (
               <Box key={item.label}>
-                <ListItem disablePadding>
-                  <ListItemText
-                    primary={item.label}
-                    sx={{ px: 2, py: 1, '& .MuiTypography-root': { fontWeight: 600, color: TEXT_PRIMARY } }}
-                  />
-                </ListItem>
-                {item.children.map((child) => (
-                  <ListItem key={child.label} disablePadding>
+                {'children' in item ? (
+                  <>
+                    <ListItem disablePadding>
+                      <ListItemText
+                        primary={item.label}
+                        sx={{ px: 2, py: 1, '& .MuiTypography-root': { fontWeight: 600, color: TEXT_PRIMARY } }}
+                      />
+                    </ListItem>
+                    {(item as NavItemWithChildren).children.map((child) => (
+                      <ListItem key={child.label} disablePadding>
+                        <ListItemButton
+                          component={child.external ? 'a' : Link}
+                          href={child.href}
+                          target={child.external ? '_blank' : undefined}
+                          onClick={() => set_mobile_open(false)}
+                          sx={{ pl: 4 }}
+                        >
+                          <ListItemText
+                            primary={child.label}
+                            sx={{ '& .MuiTypography-root': { fontSize: '0.9rem', color: TEXT_SECONDARY } }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </>
+                ) : (
+                  <ListItem disablePadding>
                     <ListItemButton
-                      component={child.external ? 'a' : Link}
-                      href={child.href}
-                      target={child.external ? '_blank' : undefined}
+                      component={Link}
+                      href={(item as NavItemDirect).href}
                       onClick={() => set_mobile_open(false)}
-                      sx={{ pl: 4 }}
                     >
                       <ListItemText
-                        primary={child.label}
-                        sx={{ '& .MuiTypography-root': { fontSize: '0.9rem', color: TEXT_SECONDARY } }}
+                        primary={item.label}
+                        sx={{ '& .MuiTypography-root': { fontWeight: 600, color: TEXT_PRIMARY } }}
                       />
                     </ListItemButton>
                   </ListItem>
-                ))}
+                )}
               </Box>
             ))}
           </List>
