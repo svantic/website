@@ -4,6 +4,10 @@ import createMDX from '@next/mdx';
 const next_config = {
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
   output: 'standalone',
+  outputFileTracingIncludes: {
+    '/blog': ['./src/content/blog/**/*'],
+    '/blog/[slug]': ['./src/content/blog/**/*'],
+  },
 };
 
 const with_mdx = createMDX({
