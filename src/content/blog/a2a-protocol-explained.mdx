@@ -1,6 +1,6 @@
 ---
-title: "A2A Protocol: How Agents Discover and Collaborate Dynamically"
-excerpt: "The Agent-to-Agent protocol is how Svantic agents find each other and work together without hardcoded integrations. Here's how it works."
+title: "A2A Protocol: How Agents Discover and Collaborate"
+excerpt: "The Agent-to-Agent protocol is how Svantic agents find each other and work together without hardcoded integrations. Here's the spec, the flow, and how it enables emergent workflows."
 author: "David Park"
 date: "2026-04-01"
 category: "Technical"
@@ -13,38 +13,15 @@ The naive approach is hardcoded integrations. Agent A calls Agent B. Agent B cal
 
 This works for demos. It fails at scale. What happens when you have 50 agents? 200? What happens when agents are added and removed dynamically?
 
-We needed a protocol for agent collaboration. We call it A2A — Agent-to-Agent.
+We needed a protocol for agent collaboration. We adopted A2A — Agent-to-Agent — the open standard for agent interoperability.
 
 ## The Problem
 
 Traditional multi-agent systems have two approaches:
 
-**1. Centralized Orchestration**
+**Centralized Orchestration** — A "manager" agent controls everything. Easy to reason about but creates bottlenecks. The manager becomes a single point of failure and needs to know about every agent's capabilities upfront.
 
-A "manager" agent controls everything:
-
-```
-Manager → "Agent A, do X"
-Agent A → result
-Manager → "Agent B, do Y with result"
-Agent B → result
-Manager → "Done"
-```
-
-This is easy to reason about but creates bottlenecks. The manager becomes a single point of failure. The manager needs to know about every agent's capabilities upfront.
-
-**2. Hardcoded Pipelines**
-
-Agents are wired together in code:
-
-```python
-result = agent_a.process(input)
-result = agent_b.transform(result)
-result = agent_c.validate(result)
-return result
-```
-
-This is fast but inflexible. Adding a new agent requires code changes. The system can't adapt to runtime conditions.
+**Hardcoded Pipelines** — Agents are wired together in code. Fast but inflexible. Adding a new agent requires code changes. The system can't adapt to runtime conditions.
 
 ## A2A: Dynamic Discovery and Collaboration
 
@@ -54,33 +31,31 @@ A2A is a protocol that lets agents discover each other and collaborate dynamical
 
 Every agent publishes an Agent Card — a machine-readable description of its capabilities:
 
-```yaml
-name: invoice-processor
-description: Extracts structured data from invoice documents
-capabilities:
-  - name: extract_fields
-    description: Extract vendor, amount, date, line items from invoice
-    input_schema:
-      type: object
-      properties:
-        document_url: { type: string }
-        document_type: { type: string, enum: [pdf, image, email] }
-    output_schema:
-      type: object
-      properties:
-        vendor: { type: string }
-        amount: { type: number }
-        date: { type: string, format: date }
-        line_items: { type: array }
-protocols:
-  - a2a/1.0
-  - mcp/1.0
-authentication:
-  type: oauth2
-  scopes: [documents:read]
+```json
+{
+  "name": "invoice-processor",
+  "description": "Extracts structured data from invoice documents",
+  "url": "http://invoice-processor:4000/send",
+  "version": "1.0.0",
+  "capabilities": { "streaming": true },
+  "skills": [
+    {
+      "id": "extract_fields",
+      "name": "extract_fields",
+      "description": "Extract vendor, amount, date, line items from invoice",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "document_url": { "type": "string" },
+          "document_type": { "type": "string", "enum": ["pdf", "image", "email"] }
+        }
+      }
+    }
+  ]
+}
 ```
 
-Agent Cards are registered with the Mesh and discoverable by any other agent.
+Agent Cards are published at `/.well-known/agent-card.json` and registered with the Mesh. Any agent can discover them.
 
 ### Capability Discovery
 
@@ -93,30 +68,14 @@ const agents = await mesh.discover({
   constraints: { latency_ms: 2000, cost_budget: 0.10 }
 });
 
-// Returns:
-[
-  { 
-    agent: 'invoice-processor', 
-    capability: 'extract_fields',
-    estimated_latency_ms: 1200,
-    estimated_cost: 0.03,
-    success_rate: 0.97
-  },
-  {
-    agent: 'generic-document-agent',
-    capability: 'extract_structured_data',
-    estimated_latency_ms: 1800,
-    estimated_cost: 0.05,
-    success_rate: 0.89
-  }
-]
+// Returns matching agents ranked by fit
 ```
 
-The requesting agent can now choose the best collaborator based on its criteria.
+The requesting agent can choose the best collaborator based on latency, cost, success rate, or custom criteria.
 
-### Task Delegation
+### Task Dispatch
 
-Once an agent is selected, the requesting agent sends a task:
+Once an agent is selected, the requesting agent sends a task via JSON-RPC 2.0:
 
 ```typescript
 const result = await mesh.delegate({
@@ -126,14 +85,13 @@ const result = await mesh.delegate({
     document_url: 'https://storage.example.com/invoices/inv-123.pdf',
     document_type: 'pdf'
   },
-  timeout_ms: 5000,
-  callback_url: 'https://my-agent.example.com/callbacks'
+  timeout_ms: 5000
 });
 ```
 
-The Mesh routes the request to the target agent, handles retries if needed, and returns the result.
+The Mesh routes the request, handles retries if needed, and returns the result.
 
-### Emergent Workflows
+## Emergent Workflows
 
 The power of A2A is that workflows emerge from capabilities, not code.
 
@@ -141,62 +99,59 @@ Consider a task: "Process this invoice and update the accounting system."
 
 With A2A:
 
-1. The initiating agent queries for `extract_fields` capability → finds `invoice-processor`
-2. Delegates extraction → receives structured invoice data
-3. Queries for `update_accounting_entry` capability → finds `accounting-agent`
-4. Delegates update → receives confirmation
-5. Task complete
+- The initiating agent queries for `extract_fields` capability → finds `invoice-processor`
+- Delegates extraction → receives structured invoice data
+- Queries for `update_accounting_entry` capability → finds `accounting-agent`
+- Delegates update → receives confirmation
+- Task complete
 
 No hardcoded pipeline. If tomorrow you deploy a better invoice processor, the workflow automatically uses it. If the accounting system is down, the Mesh handles retries.
 
-## Protocol Spec
+## Registration Flow
 
-A2A messages follow a simple structure:
+Remote agents register with the Mesh in two steps:
 
-```typescript
-interface A2ARequest {
-  protocol: "a2a/1.0";
-  message_type: "task" | "response" | "error" | "heartbeat";
-  request_id: string;
-  source_agent: string;
-  target_agent: string;
-  capability: string;
-  input: Record<string, unknown>;
-  metadata: {
-    trace_id: string;
-    timeout_ms: number;
-    priority: "low" | "normal" | "high";
-  };
-}
+```
+1. POST /auth/get_token { client_id, client_secret, agent_type }
+   → { token: "eyJ..." }
 
-interface A2AResponse {
-  protocol: "a2a/1.0";
-  message_type: "response";
-  request_id: string;
-  source_agent: string;
-  output: Record<string, unknown>;
-  metadata: {
-    execution_time_ms: number;
-    tokens_used?: number;
-  };
-}
+2. POST /agents/register (Bearer token)
+   { agent_type, instance_id, url, tools, mcp_servers }
+   → Mesh fetches agent card, creates capability proxies
+   → { ok: true, tenant_id }
 ```
 
-Transport is WebSocket for real-time communication, with HTTP fallback for request/response patterns.
+From that moment, the agent's capabilities are discoverable and invocable by any other agent in the same tenant.
+
+## Streaming
+
+For long-running tasks, A2A SSE streaming provides real-time progress:
+
+```
+POST /send (message/stream)
+  → SSE: TaskStatusUpdateEvent (working...)
+  → SSE: TaskStatusUpdateEvent (working...)
+  → SSE: TaskArtifactUpdateEvent (result)
+  → SSE: TaskStatusUpdateEvent (completed)
+```
+
+Clients can display progress, intermediate results, and handle long-running operations gracefully.
 
 ## Security
 
 A2A includes security by default:
 
-**Authentication**: Agents authenticate with the Mesh using API keys or mTLS. The Mesh verifies identity before routing requests.
+**Authentication** — Agents authenticate with the Mesh using API keys or mTLS. The Mesh verifies identity before routing requests.
 
-**Authorization**: Agent Cards specify required scopes. The Mesh enforces that requesting agents have appropriate permissions.
+**Multi-Tenant Isolation** — Tenant A's agents are invisible to Tenant B. Cryptographic boundary.
 
-**Encryption**: All A2A traffic is encrypted in transit (TLS 1.3).
+**Authorization** — Agent Cards specify required scopes. The Mesh enforces permissions.
 
-**Audit**: Every A2A interaction is logged with full trace context.
+**Encryption** — All A2A traffic is encrypted in transit (TLS 1.3).
 
-## Comparison to MCP
+**Audit** — Every A2A interaction is logged with full trace context.
+
+## Relationship to MCP
 
 You might wonder how A2A relates to Anthropic's Model Context Protocol (MCP).
 
@@ -205,12 +160,14 @@ They're complementary:
 - **MCP** is for LLM ↔ Tool communication (how an LLM calls a function)
 - **A2A** is for Agent ↔ Agent communication (how agents collaborate)
 
-Svantic supports both. Your agents can expose MCP-compatible tools for direct LLM access, and A2A capabilities for agent collaboration.
+Svantic supports both. Your agents can expose MCP-compatible tools for direct LLM access, and A2A capabilities for agent collaboration:
 
-```yaml
-protocols:
-  - a2a/1.0  # Agent-to-agent
-  - mcp/1.0  # LLM-to-tool
+```typescript
+// Register an MCP server — its tools become A2A capabilities
+await agent.register_mcp('filesystem', {
+  command: 'npx',
+  args: ['-y', '@modelcontextprotocol/server-filesystem', '/workspace'],
+});
 ```
 
 ## Get Started
@@ -220,22 +177,23 @@ A2A is built into the Svantic SDK. To make your agent discoverable:
 ```typescript
 const agent = new Agent({
   name: 'my-agent',
-  mesh: { url: 'wss://mesh.svantic.com' }
+  description: 'Does something useful',
+  url: 'http://localhost:4000',
 });
 
 agent.define_capability({
   name: 'my_capability',
-  description: 'Does something useful',
-  schema: { /* JSON Schema */ },
-  handler: async (input) => {
-    // Your logic here
-    return result;
+  description: 'What this capability does',
+  parameters: { /* JSON Schema */ },
+  handler: async (args) => {
+    return { result: 'done' };
   }
 });
 
-await agent.start();
+agent.expose(app);
+await mesh.connect();
 ```
 
 Your agent is now discoverable and can participate in dynamic workflows.
 
-[Read the A2A specification →](https://docs.svantic.com/protocols/a2a)
+[Read the A2A specification →](https://a2a-protocol.org)

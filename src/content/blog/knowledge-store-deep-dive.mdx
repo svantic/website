@@ -1,10 +1,10 @@
 ---
-title: "Building Institutional Memory: A Deep Dive into the Knowledge Store"
-excerpt: "How Svantic's Knowledge Store turns every interaction into compounding intelligence for your AI agents. The architecture, the trade-offs, and why it matters."
+title: "How the Knowledge Store Turns Every Execution Into Compounding Intelligence"
+excerpt: "Most AI agents have amnesia. Svantic's Knowledge Store captures patterns from successful executions and retrieves them for future tasks. Here's the architecture."
 author: "Michael Torres"
 date: "2026-04-05"
 category: "Technical"
-read_time: "10 min read"
+read_time: "9 min read"
 ---
 
 Most AI agents have amnesia. Every session starts from scratch. Every mistake is repeated. Every successful strategy is forgotten.
@@ -15,16 +15,16 @@ Svantic's Knowledge Store changes that. Here's how we built institutional memory
 
 Consider a document processing workflow. The first time an agent encounters an invoice from Acme Corp, it might:
 
-1. Try to extract fields using a generic template
-2. Fail because Acme uses a non-standard layout
-3. Fall back to OCR + LLM extraction
-4. Eventually succeed after 3-4 attempts
+- Try to extract fields using a generic template
+- Fail because Acme uses a non-standard layout
+- Fall back to OCR + LLM extraction
+- Eventually succeed after 3-4 attempts
 
 The second time it sees an Acme invoice? Same process. Same failures. Same wasted tokens.
 
-Now multiply this by thousands of document types, hundreds of edge cases, and millions of executions. The cost compounds. The latency compounds. The unreliability compounds.
+Multiply this by thousands of document types and millions of executions. The cost compounds. The latency compounds. The unreliability compounds.
 
-## What the Knowledge Store Does
+## The Learning Cycle
 
 The Knowledge Store observes every execution and extracts reusable patterns:
 
@@ -44,87 +44,70 @@ Execution #2: Acme invoice (different document)
 
 The 50,000th Acme invoice is processed as efficiently as if we'd written custom code for it.
 
+## What Gets Stored
+
+The Learner agent extracts patterns from successful executions:
+
+| Pattern Type | Example |
+|---|---|
+| **Navigation strategies** | "This portal requires clicking 'My Policies' before the download link appears" |
+| **Error recovery** | "When login fails with 'session expired', clear cookies and retry" |
+| **Authentication flows** | "This carrier uses a two-step MFA with SMS verification" |
+| **Data layouts** | "Policy details are in the third tab, under 'Coverage Summary'" |
+| **Tool preferences** | "For PDF extraction from this source, direct download works better than screenshot" |
+
 ## Architecture
 
 The Knowledge Store has three layers:
 
-### 1. Observation Layer
+### Observation Layer
 
-Every agent execution emits events:
+Every agent execution emits structured events — task type, attempts, strategies tried, success/failure, input characteristics. These events are captured automatically with no instrumentation required.
 
-```typescript
-{
-  execution_id: "exec_abc123",
-  agent: "document-processor",
-  task: "extract_invoice_fields",
-  attempts: [
-    { strategy: "template_match", success: false, error: "unknown_layout" },
-    { strategy: "ocr_extraction", success: true, duration_ms: 1250 }
-  ],
-  input_signature: "sha256:def456...",
-  output: { vendor: "Acme Corp", amount: 1500.00, ... },
-  metadata: { document_type: "invoice", source: "email" }
-}
-```
-
-These events are captured automatically — no instrumentation required.
-
-### 2. Indexing Layer
+### Indexing Layer
 
 Raw events are processed into retrievable knowledge:
 
-**Pattern Extraction**: Successful strategies are indexed by input characteristics.
+**Pattern Extraction**: Successful strategies are indexed by input characteristics. A document layout hash maps to the extraction strategy that worked.
 
-```
-input_signature:sha256:def456 → strategy:ocr_extraction (confidence: 0.95)
-document_type:invoice + vendor:acme → layout:acme_standard_v2
-```
+**Failure Analysis**: Failed attempts are analyzed to avoid future mistakes. If template matching always fails for Acme invoices, the system learns to skip it.
 
-**Failure Analysis**: Failed attempts are analyzed to avoid future mistakes.
+**Embedding Generation**: Unstructured inputs are embedded for semantic retrieval. "Process this insurance claim" retrieves knowledge from similar past tasks.
 
-```
-strategy:template_match + layout:acme_standard_v2 → failure_rate: 100%
-```
-
-**Embedding Generation**: Unstructured inputs (documents, queries) are embedded for semantic retrieval.
-
-### 3. Retrieval Layer
+### Retrieval Layer
 
 Before executing a task, agents query the Knowledge Store:
 
 ```typescript
 const knowledge = await knowledge_store.query({
-  task: "extract_invoice_fields",
+  task: 'extract_invoice_fields',
   input_signature: document_hash,
-  context: { document_type: "invoice" }
+  context: { document_type: 'invoice' }
 });
 
 // Returns:
 {
-  suggested_strategy: "ocr_extraction",
+  suggested_strategy: 'ocr_extraction',
   confidence: 0.95,
   similar_executions: 847,
   average_duration_ms: 890,
-  known_pitfalls: ["date_format_varies", "address_sometimes_missing"]
+  known_pitfalls: ['date_format_varies', 'address_sometimes_missing']
 }
 ```
 
 The agent uses this knowledge to skip failed strategies and apply proven approaches.
 
-## The Flywheel Effect
+## The Compounding Effect
 
-Knowledge compounds:
+Knowledge compounds over time:
 
-1. **More executions → More patterns** — Every task adds to the knowledge base.
-2. **More patterns → Better retrieval** — Semantic search improves with more examples.
-3. **Better retrieval → Faster execution** — Fewer attempts, fewer tokens, lower latency.
-4. **Faster execution → More usage** — Better economics enable more use cases.
+| Stage | Knowledge Level | First-try Success | Human Help |
+|---|---|---|---|
+| **100 tasks** | Low | 20% | High |
+| **1,000 tasks** | Medium | 65% | Medium |
+| **10,000 tasks** | High | 90%+ | Rare |
 
-After 10,000 document processing tasks, we typically see:
-
-- **3x reduction** in average attempts per task
-- **60% reduction** in token usage
-- **45% improvement** in end-to-end latency
+Each execution feeds the store. Knowledge from one domain helps others. The scraper learned that insurance portals have a "My Documents" tab? That pattern helps when the AI encounters a similar portal from a different carrier.
 
 ## Staleness Detection
 
@@ -133,73 +116,49 @@ Knowledge can go stale. Acme Corp might redesign their invoices. A strategy that
 The Knowledge Store tracks success rates over time:
 
 ```
-strategy:ocr_extraction + layout:acme_standard_v2
+strategy: ocr_extraction + layout: acme_standard_v2
 ├── Last 7 days: 98% success (n=234)
 ├── Last 30 days: 97% success (n=1,847)
-├── Last 90 days: 94% success (n=5,291)
 └── Status: HEALTHY
 
-strategy:template_match + layout:vendor_x_2024
+strategy: template_match + layout: vendor_x_2024
 ├── Last 7 days: 45% success (n=89)
 ├── Last 30 days: 82% success (n=412)
-├── Last 90 days: 91% success (n=1,203)
-└── Status: DEGRADED — investigating
+└── Status: DEGRADED — re-learning triggered
 ```
 
-When success rates drop, the Knowledge Store:
+When success rates drop, the system flags the pattern as stale, reduces confidence scores, triggers re-learning from recent executions, and alerts operators if degradation persists.
 
-1. Flags the pattern as potentially stale
-2. Reduces confidence scores for affected strategies
-3. Triggers re-learning from recent successful executions
-4. Alerts operators if degradation persists
+## Central + Sidecar: Fleet Learning
 
-## Privacy and Data Isolation
+In standalone or sidecar deployments, knowledge is local to each instance. But with Central + Sidecar (Hub Mesh) topology:
+
+- **Sidecars contribute knowledge upward** — their learnings benefit the whole fleet
+- **Sidecars retrieve knowledge from central** — they benefit from other sidecars' learnings
+
+What Pod A learned on Monday is available to Pod C on Tuesday. This creates fleet-wide institutional intelligence.
+
+## Privacy and Isolation
 
 Knowledge is scoped by tenant. Your patterns never leak to other customers.
 
 For sensitive data, the Knowledge Store supports:
 
-- **Input hashing**: Only signatures are stored, not raw inputs
-- **Output redaction**: Configurable rules to strip PII before indexing
-- **Retention policies**: Automatic expiration of old knowledge
-- **Encryption at rest**: AES-256 for all stored data
+- **Input hashing** — Only signatures are stored, not raw inputs
+- **Output redaction** — Configurable rules to strip PII before indexing
+- **Retention policies** — Automatic expiration of old knowledge
+- **Encryption at rest** — AES-256 for all stored data
 
-## Using the Knowledge Store
+## The Moat
 
-The Knowledge Store is enabled by default. No configuration required.
+The Knowledge Store is the moat. It's what makes the 50,000th task easier than the 100th. It's proprietary data that grows with every execution.
 
-To query it explicitly:
+After 10,000 document processing tasks, we typically see:
 
-```typescript
-import { knowledge_store } from '@svantic/sdk';
+- **3x reduction** in average attempts per task
+- **60% reduction** in token usage
+- **45% improvement** in end-to-end latency
 
-// Check what we know about a task
-const insights = await knowledge_store.query({
-  task: 'process_document',
-  context: { document_type: 'contract' }
-});
+The longer you use Svantic, the better it gets.
 
-console.log(insights.suggested_strategy);
-console.log(insights.known_pitfalls);
-
-// Contribute knowledge explicitly
-await knowledge_store.record({
-  task: 'process_document',
-  input_signature: hash(document),
-  strategy_used: 'clause_extraction_v2',
-  success: true,
-  metadata: { document_type: 'contract', pages: 12 }
-});
-```
-
-## What's Next
-
-We're working on:
-
-- **Cross-tenant learning** (opt-in): Learn from anonymized patterns across customers
-- **Proactive suggestions**: "Based on similar tasks, you might want to..."
-- **Knowledge export**: Download your knowledge base for analysis or backup
-
-The Knowledge Store is the moat. It's what makes the 50,000th task easier than the 100th, and it's proprietary data that grows with every execution.
-
-[Explore the Knowledge Store API →](https://docs.svantic.com/sdk-reference/knowledge-store)
+[Explore the Knowledge Store →](https://docs.svantic.com/concepts/knowledge-store)

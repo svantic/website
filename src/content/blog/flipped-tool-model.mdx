@@ -1,6 +1,6 @@
 ---
-title: "The Flipped Tool Model: Why AI Agents Should Never Touch Your Data"
-excerpt: "Every existing agent framework assumes tools run on the server. Here's why that assumption fails for real-world automation and what we did differently."
+title: "The Flipped Tool Model: Why Capabilities Execute on Your Machine"
+excerpt: "Every agent framework assumes tools run on the server. Here's why that assumption fails for real-world automation, and how Svantic's bidirectional execution model solves it."
 author: "Sarah Kim"
 date: "2026-04-08"
 category: "Technical"
@@ -16,7 +16,6 @@ This assumption is wrong. And it's why most enterprise AI projects fail.
 Here's how most frameworks work:
 
 ```python
-# Typical agent framework
 agent = Agent(tools=[
     Tool(name="query_database", func=query_db),
     Tool(name="send_email", func=send_email),
@@ -33,7 +32,7 @@ This seems reasonable until you ask: **where are the database credentials?**
 For tools to run on the server, the server needs access to:
 
 - Database credentials
-- API keys
+- API keys  
 - File systems
 - Browser sessions
 - Internal network resources
@@ -48,9 +47,9 @@ Enterprise security requirements are clear:
 
 The standard model violates all three.
 
-## The Flipped Model
+## The A2A Solution
 
-Svantic flips the architecture. Instead of tools running on our servers, tools run on yours:
+Svantic uses the A2A protocol to flip the architecture. Instead of tools running on our servers, capabilities execute on yours:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -60,7 +59,6 @@ Svantic flips the architecture. Instead of tools running on our servers, tools r
 │  │ Agent A │  │ Agent B │  │ Agent C │ │
 │  │ (Tools) │  │ (Tools) │  │ (Tools) │ │
 │  └────┬────┘  └────┬────┘  └────┬────┘ │
-│       │            │            │       │
 └───────┼────────────┼────────────┼───────┘
         │            │            │
         └────────────┼────────────┘
@@ -75,48 +73,58 @@ The Mesh orchestrates. Your agents execute. Credentials never cross the boundary
 
 ## How It Works
 
-When you register an agent with Svantic:
+When you register an agent with Svantic, you define capabilities:
 
 ```typescript
+import { Agent } from '@svantic/sdk';
+
 const agent = new Agent({
   name: 'crm-agent',
-  port: 4000,
-  mesh: { url: 'wss://mesh.svantic.com' }
+  description: 'Manages customer records',
+  url: 'http://localhost:4000',
 });
 
 agent.define_capability({
   name: 'get_customer',
   description: 'Retrieve customer by ID',
-  handler: async ({ customer_id }) => {
+  parameters: {
+    type: 'object',
+    properties: {
+      customer_id: { type: 'string' },
+    },
+    required: ['customer_id'],
+  },
+  handler: async (args) => {
     // This runs on YOUR server
-    return await db.query('SELECT * FROM customers WHERE id = ?', [customer_id]);
-  }
+    return await db.query('SELECT * FROM customers WHERE id = ?', [args.customer_id]);
+  },
 });
-
-await agent.start();
 ```
 
-The agent connects to the Mesh via WebSocket. The Mesh knows what capabilities exist but never executes them directly. When a task requires `get_customer`, the Mesh sends a message to your agent, your agent executes locally, and returns the result.
+The agent publishes an Agent Card at `/.well-known/agent-card.json` describing its capabilities. Svantic knows what the agent can do but never executes it directly.
+
+When a task requires `get_customer`, Svantic sends an A2A message to your agent. Your agent executes locally and returns the result. The database credentials, the query, the customer data — all stay on your infrastructure.
 
 ## Security Implications
 
-This architecture provides:
+**Data Sovereignty** — Customer data is queried and processed on your infrastructure. Svantic only sees the structured result you choose to return.
 
-**Data Sovereignty**
+**Credential Isolation** — Your database credentials, API keys, and secrets stay in your environment. Svantic never has access.
 
-Customer data is queried and processed on your infrastructure. The Mesh only sees the structured result you choose to return.
+**Network Isolation** — Capabilities can access internal resources — databases behind firewalls, internal APIs, file shares — without exposing them to the internet.
 
-**Credential Isolation**
+**Audit Trails** — Every capability invocation is logged locally. You have complete visibility into what your agents do.
 
-Your database credentials, API keys, and secrets stay in your environment. The Mesh never has access.
+## Zero-Knowledge Credentials
 
-**Network Isolation**
+For browser automation, we take this further. When an agent needs to fill a login form:
 
-Tools can access internal resources — databases behind firewalls, internal APIs, file shares — without exposing them to the internet.
+- The agent identifies the form fields and their CSS selectors
+- The agent sends the **credential key** (e.g., "password") and the **selector**
+- The client fills the value **locally** — the value never leaves your machine
+- The agent only sees success/failure
 
-**Audit Trails**
-
-Every tool invocation is logged locally. You have complete visibility into what your agents do.
+Passwords, API keys, and tokens never leave the client. Even if the AI's context were compromised, credentials are safe.
 
 ## The Trade-off
 
@@ -132,11 +140,11 @@ When we talk to enterprise security teams, they ask three questions:
 - "Where is our data processed?" — **On your infrastructure.**
 - "Can we audit everything?" — **Yes, locally.**
 
-The flipped model is why HealthSync, FinanceFlow, and other regulated customers were able to deploy Svantic in production. Their compliance teams said yes because the architecture made the risks tractable.
+The flipped model is why HealthSync, FinanceFlow, and other regulated customers deployed Svantic in production. Their compliance teams said yes because the architecture made the risks tractable.
 
 ## Get Started
 
-The flipped model is the default in Svantic. There's nothing to configure — just run your agents on your infrastructure and connect to the Mesh.
+The flipped model is the default in Svantic. Just run your agents on your infrastructure and connect to the Mesh:
 
 ```bash
 npx svantic init my-agent
@@ -144,6 +152,6 @@ cd my-agent
 npm start
 ```
 
-Your agent is now registered and ready to participate in workflows, with all tools executing locally.
+Your agent is now registered and ready to participate in workflows, with all capabilities executing locally.
 
 [Read the SDK documentation →](https://docs.svantic.com/sdk-reference)

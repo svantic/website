@@ -1,0 +1,235 @@
+---
+title: "Forge: Generate Production Agents from OpenAPI, TypeScript, or Plain English"
+excerpt: "The fastest path from idea to working agent. Forge generates production-ready code from API specs, existing source code, or natural language — in seconds."
+author: "Emily Rodriguez"
+date: "2026-03-28"
+category: "Product"
+read_time: "6 min read"
+---
+
+What if you could go from "I need an agent that talks to Zendesk" to working, production-ready code in 30 seconds?
+
+That's Forge. It's the fastest path from idea to agent.
+
+## The Pipeline
+
+Forge follows a consistent pipeline regardless of input:
+
+```
+Source → Tool Spec (YAML) → TypeScript Capabilities → Agent
+```
+
+You provide the source — an OpenAPI spec, TypeScript code, or plain English. Forge generates a standardized YAML tool spec, then TypeScript capability handlers, then optionally a complete standalone agent project.
+
+## From OpenAPI Specs
+
+Two commands. That's it.
+
+**List operations** to see what's available:
+
+```bash
+svantic forge tool --list zendesk-openapi.yaml
+
+# Output:
+# create_ticket    POST   /api/v2/tickets
+# list_tickets     GET    /api/v2/tickets
+# update_ticket    PUT    /api/v2/tickets/{id}
+# delete_ticket    DELETE /api/v2/tickets/{id}
+# ...
+```
+
+**Generate** the tools you want:
+
+```bash
+svantic forge tool --spec zendesk-openapi.yaml \
+  --pick create_ticket,list_tickets,update_ticket \
+  --out ./tools/
+```
+
+Forge reads the OpenAPI spec, extracts the selected operations, generates a `.tool-spec.yaml` describing each tool, and writes TypeScript capability handlers that call the actual API.
+
+**Auth detection is automatic.** Forge reads `securitySchemes` and maps them:
+- HTTP bearer → bearer token env
+- `apiKey` in header → `api_key` + header name
+- HTTP basic → username/password env pair
+- OAuth2 → client credentials flow
+
+Swagger 2.0 is supported — specs are converted to OpenAPI 3 internally.
+
+## From TypeScript Source
+
+Already have business logic? Forge can wrap it.
+
+**Scan** your code:
+
+```bash
+svantic forge tool --scan src/billing.ts
+
+# Output:
+# charge(customer_id: string, amount: number): Promise<Receipt>
+# refund(charge_id: string, reason?: string): Promise<Refund>
+# get_balance(customer_id: string): Promise<Balance>
+```
+
+**Generate** wrappers:
+
+```bash
+svantic forge tool --scan src/billing.ts \
+  --pick charge,refund \
+  --out ./tools/
+```
+
+Forge analyzes your TypeScript AST, extracts function signatures, converts types to JSON Schema, and generates capability handlers that call your original functions.
+
+**JSDoc becomes descriptions.** The `@param` lines become parameter descriptions. The function's JSDoc comment becomes the tool description. The AI reads these.
+
+**Classes work too.** Public methods on exported classes become tools named `classname_method`. Private and protected methods are skipped.
+
+## From Natural Language
+
+Don't have a spec? Describe what you want.
+
+```bash
+svantic forge tool --prompt "Monitor Datadog alerts and query metrics" --out ./tools/
+```
+
+Forge uses Gemini to propose tools based on your description. It shows you the proposal, you confirm or edit, and then it generates the code.
+
+**Add docs for better results:**
+
+```bash
+svantic forge tool \
+  --prompt "Monitor Datadog alerts and query metrics" \
+  --docs https://docs.datadog.com/api \
+  --out ./tools/
+```
+
+With API documentation, the model proposes tools that match the real API surface — correct endpoint names, parameter types, and authentication patterns.
+
+## Composing Agents
+
+Once you have tool specs, compose them into a complete agent:
+
+**Standalone project** — everything you need to deploy:
+
+```bash
+svantic forge agent \
+  --name ops-bot \
+  --tools zendesk.yaml,slack.yaml,datadog.yaml \
+  --standalone
+```
+
+This generates:
+- `server.ts` — Express server with A2A endpoints
+- `capabilities/` — all tool handlers
+- `triggers/` — webhook and schedule handlers (if specs define them)
+- `package.json` — dependencies
+- `Dockerfile` — production container
+- `.env.template` — required environment variables
+
+**Embedded modules** — for existing apps:
+
+```bash
+svantic forge agent \
+  --name ops-bot \
+  --tools zendesk.yaml,slack.yaml \
+  --out ./src/agents/ops-bot/
+```
+
+Same capability code, but designed to integrate into your existing Express app.
+
+## Collision Handling
+
+What if two specs have a tool with the same name? Forge catches this and offers solutions:
+
+```bash
+# Add prefixes to disambiguate
+svantic forge agent --tools zendesk.yaml,jira.yaml --prefix domain
+
+# Or rename specific tools
+svantic forge agent --tools zendesk.yaml,jira.yaml \
+  --rename "zendesk:create_ticket=create_support_ticket" \
+  --rename "jira:create_ticket=create_dev_ticket"
+```
+
+## The Tool Spec Format
+
+The YAML intermediate is the source of truth. You can edit it manually, validate it, and regenerate:
+
+```yaml
+domain: zendesk
+version: 1.0.0
+base_url: https://yourcompany.zendesk.com/api/v2
+auth:
+  type: bearer
+  env: ZENDESK_API_TOKEN
+
+tools:
+  - name: create_ticket
+    description: Create a new support ticket
+    method: POST
+    path: /tickets
+    body:
+      subject: { type: string, required: true }
+      description: { type: string, required: true }
+      priority: { type: string, enum: [low, normal, high, urgent] }
+
+triggers:
+  - name: ticket_created
+    type: webhook
+    path: /webhooks/ticket-created
+    secret_env: ZENDESK_WEBHOOK_SECRET
+    prompt: "A new ticket was created: {{payload}}"
+```
+
+**Validate** without generating:
+
+```bash
+svantic forge tool --validate my-spec.yaml
+```
+
+**Regenerate** after edits:
+
+```bash
+svantic forge tool --spec my-spec.yaml --out ./tools/
+```
+
+## Interactive Mode in the Terminal
+
+The Svantic terminal can run the same workflow conversationally:
+
+```
+> Read my source code in src/monitoring/ and propose tools
+→ Found 8 exported functions. Proposing tools...
+
+> Remove health_check, rename get_metrics to fetch_metrics
+→ Updated proposal. 7 tools remaining.
+
+> Now generate the tools
+→ Writing monitoring.tool-spec.yaml and monitoring.capabilities.ts
+
+> Compose these with my zendesk tools into monitoring-bot
+→ Generated standalone agent in ./monitoring-bot/
+```
+
+The underlying capabilities — `forge_propose_tools`, `forge_generate_tools`, `forge_scan_file` — are the same ones the CLI uses.
+
+## Get Started
+
+```bash
+# Install the CLI
+npm install -g @svantic/cli
+
+# Generate from an OpenAPI spec
+svantic forge tool --spec your-api.yaml --out ./tools/
+
+# Or from natural language
+svantic forge tool --prompt "Send messages to Slack channels" --out ./tools/
+
+# Compose into an agent
+svantic forge agent --name my-agent --tools ./tools/*.yaml --standalone
+```
+
+From API spec to deployed agent in minutes.
+
+[Read the Forge documentation →](https://docs.svantic.com/build/forge)

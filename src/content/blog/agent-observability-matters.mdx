@@ -1,8 +1,8 @@
 ---
-title: "Why Agent Observability Is Different (And Harder)"
-excerpt: "Traditional APM tools weren't built for AI agents. Here's what makes agent observability uniquely challenging and how we approached it."
-author: "Chris Wang"
-date: "2026-03-25"
+title: "Agent Observability: Why Traditional APM Tools Fall Short"
+excerpt: "Traditional observability tools weren't built for AI agents. Here's what makes agent observability uniquely challenging and how Svantic's telemetry system addresses it."
+author: "Jennifer Park"
+date: "2026-03-22"
 category: "Engineering"
 read_time: "8 min read"
 ---
@@ -15,7 +15,7 @@ If you've tried using traditional observability tools (Datadog, New Relic, Prome
 
 ## What Makes Agents Different
 
-### 1. Non-Deterministic Behavior
+### Non-Deterministic Behavior
 
 Traditional services: same input → same output.
 
@@ -23,32 +23,48 @@ Agents: same input → potentially different outputs, different tool calls, diff
 
 When an agent fails, you can't just replay the request. You need to understand the entire decision chain.
 
-### 2. Multi-Turn Interactions
+### Multi-Turn Interactions
 
 A REST API call is a single request/response. An agent session might involve:
 
 - 15 LLM calls
-- 8 tool invocations
+- 8 tool invocations  
 - 3 sub-agent delegations
 - 40+ internal state transitions
 
-The "trace" isn't a simple waterfall — it's a tree (or even a DAG).
+The "trace" isn't a simple waterfall — it's a tree.
 
-### 3. Hidden Reasoning
+### Hidden Reasoning
 
 The most important information is often invisible. Why did the agent choose tool A over tool B? Why did it retry? What context influenced the decision?
 
-Traditional traces show what happened. Agent traces need to show why.
+Traditional traces show what happened. Agent traces need to show **why**.
 
-### 4. Cost Attribution
+### Cost Attribution
 
 Agent operations have variable costs. An LLM call might cost $0.001 or $0.10 depending on context size. A workflow might make 5 LLM calls or 50.
 
 You need cost visibility at every level: per-session, per-agent, per-capability, per-customer.
 
-## What We Built
+## Svantic's Approach
 
-Svantic's observability layer was designed for agents from day one.
+Svantic's telemetry was designed for agents from day one.
+
+### Zero-Config by Default
+
+Telemetry is enabled automatically. Every agent records spans, LLM usage, and events with no setup required:
+
+```typescript
+const agent = new Agent({
+  name: 'ticket-agent',
+  description: 'Manages support tickets.',
+  url: 'http://localhost:4000',
+});
+
+// That's it. Telemetry is already working.
+```
+
+When connected to the Mesh, telemetry exports to the Svantic dashboard. In standalone mode, it exports to the console.
 
 ### Hierarchical Traces
 
@@ -68,19 +84,35 @@ Session: "Process invoice batch"
 └── Summary: 6 operations, 6,000 tokens, 3.1s total
 ```
 
-You can drill down from session to agent to individual operation.
+Drill down from session to agent to individual operation.
 
-### Decision Context
+### Span Types
 
-For every LLM call, we capture:
+Different operations need different instrumentation:
 
-- **Input context**: What the model saw (with PII redaction options)
-- **Output**: What the model produced
-- **Alternatives considered**: If the agent had multiple options, what were they?
-- **Confidence scores**: How certain was the decision?
-- **Knowledge Store hits**: Did we use cached patterns?
+**Generic spans** for any operation:
 
-This lets you answer "why did it do that?" without guessing.
+```typescript
+const span = agent.tracer.start_span('operation_name');
+span.set_attribute('custom.attribute', 'value');
+span.end();
+```
+
+**Tool spans** with the tool name as an automatic attribute:
+
+```typescript
+const span = agent.tracer.start_tool_span('get_ticket');
+span.set_attribute('ticket.id', 4521);
+span.end();
+```
+
+**LLM spans** that capture model and token usage:
+
+```typescript
+const span = agent.tracer.start_llm_span('gemini-2.0-flash');
+// ... make LLM call ...
+span.end({ input_tokens: 150, output_tokens: 42 });
+```
 
 ### Cost Tracking
 
@@ -93,7 +125,6 @@ Every trace includes cost attribution:
   "breakdown": {
     "llm_tokens": { "input": 12400, "output": 2100, "cost": 0.0732 },
     "tool_calls": { "count": 8, "cost": 0.0045 },
-    "storage": { "bytes": 45000, "cost": 0.0001 },
     "orchestration": { "messages": 12, "cost": 0.0069 }
   },
   "by_agent": {
@@ -106,47 +137,46 @@ Every trace includes cost attribution:
 
 Roll up costs by customer, by workflow, by time period.
 
-### Anomaly Detection
+### W3C Trace Propagation
 
-We baseline "normal" behavior and alert on deviations:
+When your agent calls another agent (via A2A), trace context propagates automatically using the W3C `traceparent` header. This creates unified traces across agent-to-agent calls.
 
-- Token usage 3x higher than usual? Alert.
-- Latency P95 doubled? Alert.
-- Success rate dropped from 97% to 85%? Alert.
-- New error type appearing? Alert.
-
-Anomaly detection is trained on your specific patterns — not generic thresholds.
-
-### Replay and Debugging
-
-When something goes wrong, you can:
-
-1. **Inspect the trace**: See exactly what happened, step by step
-2. **View the context**: See what the agent "saw" at each decision point
-3. **Compare to successful runs**: Find what's different
-4. **Replay with modifications**: Test a fix without deploying
-
-## OpenTelemetry Integration
-
-We're not trying to replace your existing observability stack. Svantic exports traces in OpenTelemetry format:
+For non-A2A HTTP calls, inject context manually:
 
 ```typescript
-import { configure_observability } from '@svantic/sdk';
+import { ContextInjector } from '@svantic/sdk/telemetry';
 
-configure_observability({
+const headers = { 'Content-Type': 'application/json' };
+const context = agent.tracer.get_current_context();
+if (context) {
+  ContextInjector.inject(headers, context);
+}
+
+await fetch('https://external-service.com/api', { headers });
+```
+
+### OpenTelemetry Export
+
+Svantic exports traces in OpenTelemetry format. Send to your existing stack:
+
+```typescript
+import { SvanticTelemetry } from '@svantic/sdk';
+
+const telemetry = SvanticTelemetry.init({
+  service_name: 'ticket-agent',
   export: {
-    otlp: { endpoint: 'https://your-collector.example.com' },
-    datadog: { api_key: process.env.DD_API_KEY },
+    endpoint: 'http://otel-collector:4318/v1/traces',
+    protocol: 'otlp',
   },
-  sampling: { rate: 1.0 }, // Sample everything in production
-  redaction: {
-    pii_patterns: ['email', 'phone', 'ssn'],
-    fields: ['customer_name', 'account_number']
-  }
+});
+
+const agent = new Agent({
+  name: 'ticket-agent',
+  telemetry,
 });
 ```
 
-Your Datadog/Grafana/Honeycomb dashboards can include agent traces alongside your existing infrastructure metrics.
+Your Datadog, Grafana, or Honeycomb dashboards can include agent traces alongside infrastructure metrics.
 
 ## Practical Debugging
 
@@ -170,27 +200,41 @@ Here's a real debugging session:
 
 **Step 5**: Root cause identified — large document triggered multiple extraction passes.
 
-**Step 6**: Fix — add chunking strategy for documents >5 pages.
+**Step 6**: Fix — add chunking strategy for documents over 5 pages.
 
 Total debug time: 4 minutes.
 
+## Events
+
+For discrete signals outside the span tree:
+
+```typescript
+agent.telemetry.event('ticket.escalated', {
+  ticket_id: 4521,
+  reason: 'SLA breach',
+});
+```
+
+Events are buffered and flushed alongside spans. If emitted within an active span, they capture `trace_id` and `span_id` for correlation.
+
+## Dashboard Integration
+
+Traces appear in the Svantic dashboard under the session timeline:
+
+- Full span tree for each capability invocation
+- LLM token usage per call
+- Traces across agent-to-agent boundaries
+- Events correlated with the spans that produced them
+
 ## Retention and Compliance
 
-Trace data can be sensitive. We support:
+Trace data can be sensitive. Svantic supports:
 
-- **Configurable retention**: Keep traces for 7 days, 30 days, or custom
-- **PII redaction**: Automatic or rule-based redaction before storage
-- **Export controls**: Restrict who can export raw traces
-- **Compliance modes**: HIPAA, SOC 2, GDPR-compliant configurations
+- **Configurable retention** — 7 days, 30 days, or custom
+- **PII redaction** — Automatic or rule-based redaction before storage
+- **Export controls** — Restrict who can export raw traces
+- **Compliance modes** — HIPAA, SOC 2, GDPR configurations
 
-## Get Started
+Observability shouldn't compromise security.
 
-Agent observability is enabled by default in Svantic. Your first trace is captured automatically when you run your first session.
-
-To explore:
-
-1. Open the Svantic Dashboard
-2. Navigate to Traces
-3. Click any session to see the full trace tree
-
-[Read the observability documentation →](https://docs.svantic.com/observability)
+[Read the telemetry documentation →](https://docs.svantic.com/sdk-reference/telemetry-and-tracing)

@@ -1,0 +1,191 @@
+---
+title: "A2UI: Structured Human-in-the-Loop for AI Agents"
+excerpt: "When agents need human input, plain text prompts aren't enough. A2UI is a structured format for agents to request approvals, credentials, and decisions — rendered appropriately across every channel."
+author: "Chris Wang"
+date: "2026-03-25"
+category: "Technical"
+read_time: "7 min read"
+---
+
+When an agent needs human input, the naive approach is to print a text message and hope the human knows what to do.
+
+That breaks down in production:
+
+- **Approvals need structured responses.** "Do you approve?" needs a yes/no button, not a free-text reply.
+- **Forms need validation.** An agent asking for credentials needs a password field, not plaintext input.
+- **Different channels have different capabilities.** Slack can render buttons. Email can't. The dashboard can render anything.
+- **Sensitive data needs protection.** Credentials should never appear in Slack notifications or logs.
+
+A2UI solves this by separating the **request definition** (what the agent needs) from the **rendering** (how it's presented to the human).
+
+## The Spec
+
+An A2UI payload is a JSON object describing a set of components. The agent says what it needs; the rendering surface decides how to present it.
+
+```json
+{
+  "type": "Form",
+  "props": {
+    "title": "Approve Bulk Deletion",
+    "description": "The agent wants to delete 47 records older than 30 days.",
+    "fields": [
+      {
+        "id": "decision",
+        "type": "action",
+        "label": "Your decision",
+        "options": [
+          { "value": "approve", "label": "Approve", "style": "primary" },
+          { "value": "deny", "label": "Deny", "style": "danger" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Field Types
+
+| Type | Renders As | Slack Support |
+|---|---|---|
+| `action` | Buttons (approve/deny, custom actions) | Yes — buttons |
+| `text` | Text input | Yes — plain text input in modal |
+| `select` | Dropdown | Yes — static select |
+| `number` | Numeric input | Partial — text input with hint |
+| `password` | Masked input (sensitive) | **No** — always links to dashboard |
+| `textarea` | Multi-line text | Partial — plain text input |
+| `checkbox` | Checkbox | No — links to dashboard |
+| `date` | Date picker | No — links to dashboard |
+
+## Sensitivity
+
+Fields can be marked `sensitive: true`. Sensitive fields are:
+
+- **Never included** in Slack messages, emails, or webhook payloads
+- **Only rendered** in the dashboard or terminal (full A2UI clients)
+
+When a form contains sensitive fields, non-dashboard channels show a summary of the non-sensitive fields and a link: "This request contains sensitive fields — complete it in the dashboard."
+
+## Example: Policy Approval
+
+When a guardrail blocks an operation:
+
+```json
+{
+  "type": "Form",
+  "props": {
+    "title": "Approval Required",
+    "description": "bulk_delete_records requires approval per your security policy.",
+    "context": {
+      "agent": "executor",
+      "tool": "bulk_delete_records",
+      "session_id": "sess-42",
+      "policy": "bulk_operation_guard"
+    },
+    "fields": [
+      {
+        "id": "decision",
+        "type": "action",
+        "options": [
+          { "value": "approve", "label": "Approve" },
+          { "value": "deny", "label": "Deny" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Slack** renders this as two buttons — Approve and Deny — with the title and description as context text.
+
+**Dashboard** renders this as a card with the full context, two buttons, and links to the session and agent details.
+
+## Example: Credentials Request
+
+When an agent needs login credentials:
+
+```json
+{
+  "type": "Form",
+  "props": {
+    "title": "Login Required",
+    "description": "The agent needs credentials to access geico.com.",
+    "fields": [
+      { "id": "username", "type": "text", "label": "Username", "required": true },
+      { "id": "password", "type": "password", "label": "Password", "required": true, "sensitive": true }
+    ]
+  }
+}
+```
+
+**Slack** renders this as: "Login Required — The agent needs credentials. This request contains sensitive fields — [Complete in Dashboard]" with a button linking to the dashboard.
+
+**Dashboard** renders this as a form with a text input and a password input.
+
+The password value is never transmitted to Slack. It's entered directly in the dashboard and handled via our zero-knowledge credential flow.
+
+## How A2UI Flows Through the System
+
+The flow from agent request to human response:
+
+- Agent hits a blocking point — policy approval, tool confirmation, or explicit `request_user_input` call
+- A2UI builder constructs the spec
+- Spec is embedded in the A2A task as a `DataPart` with MIME type `application/json+a2ui`
+- Message enters `input-required` state
+- Notification pipeline fires — renderers translate the spec for each configured channel
+- Human responds — from dashboard, Slack, or webhook callback
+- Resolution flows back — field values mapped to A2UI field IDs
+- Agent continues execution with the response
+
+## Rendering Surfaces
+
+| Surface | A2UI Support | Interactive | Sensitive Fields |
+|---|---|---|---|
+| **Dashboard** | Full | Yes — forms, buttons, inputs | Yes |
+| **Terminal (CLI)** | Full | Yes — Ink components | Yes |
+| **Slack** | Partial | Yes — buttons, selects, modals | No — links to dashboard |
+| **Email** | Summary only | No — links to dashboard | No |
+| **Webhook** | Full spec as JSON | Yes — receiving system interprets | Depends on receiver |
+
+## Integration with Guardrails
+
+When a guardrail blocks an operation, it automatically generates an A2UI approval request. The blocked operation waits. When the human approves, the operation continues. When they deny, the agent receives the denial and can handle it.
+
+Approval types:
+
+| Type | Scope |
+|---|---|
+| **Session grant** | This session only — in-memory, cleared when session closes |
+| **Deny** | This request only — operation blocked |
+| **Permanent allow** | All future sessions — updates the policy |
+
+## ADK Tool Confirmation
+
+ADK's `require_confirmation` and `request_confirmation()` are mapped to the same A2UI pipeline. An ADK tool with `require_confirmation: true` produces an A2UI form with approve/deny actions.
+
+This means ADK tools get the full benefit of Svantic's notification channels — an ADK tool confirmation can be approved from Slack, not just the terminal.
+
+## Building A2UI Forms
+
+The SDK provides builders for common patterns:
+
+```typescript
+import { A2UIFormBuilder } from '@svantic/sdk';
+
+const form = A2UIFormBuilder.approval({
+  title: 'Confirm Deletion',
+  description: 'Delete 47 records?',
+});
+
+// Or a custom form
+const custom = A2UIFormBuilder.form({
+  title: 'Categorize Invoice',
+  fields: [
+    { id: 'category', type: 'select', options: ['Infrastructure', 'SaaS', 'Other'] },
+    { id: 'notes', type: 'textarea', required: false },
+  ],
+});
+```
+
+The agent sends the form, waits for the response, and receives structured data back.
+
+[Learn more about notifications and approvals →](https://docs.svantic.com/concepts/notifications)

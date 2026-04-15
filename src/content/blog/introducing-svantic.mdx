@@ -1,58 +1,81 @@
 ---
 title: "Introducing Svantic: The Platform for Production AI Agents"
-excerpt: "Today we're announcing Svantic, the platform that makes AI agents reliable, governable, and production-ready. Here's why we built it and what makes it different."
+excerpt: "Today we're publicly launching Svantic — the A2A-native platform for building, orchestrating, and governing AI agents. Here's the architecture, the philosophy, and why we built it."
 author: "Alex Chen"
 date: "2026-04-10"
 category: "Announcements"
-read_time: "5 min read"
+read_time: "6 min read"
 featured: true
 ---
 
-Today, we're publicly launching Svantic — the platform for building, orchestrating, and governing AI agents in production.
+Today, we're publicly launching Svantic — the platform for building AI agents that work in production.
 
-## The Problem We Saw
+## The Problem We Solved
 
-Over the past two years, we've watched thousands of companies try to deploy AI agents. The pattern is always the same:
+Over the past two years, we watched companies try to deploy AI agents. The pattern was always the same:
 
-1. **Week 1**: Demo works great. Everyone's excited.
-2. **Month 1**: Edge cases pile up. Reliability drops.
-3. **Month 3**: The "AI project" becomes a maintenance burden.
-4. **Month 6**: Project shelved. Team moves on.
+- **Week 1**: Demo works. Everyone's excited.
+- **Month 1**: Edge cases pile up. Reliability drops.
+- **Month 3**: The "AI project" becomes a maintenance burden.
+- **Month 6**: Project shelved. Team moves on.
 
-The problem isn't the AI. The problem is everything around it: orchestration, governance, observability, and learning.
+The problem wasn't the AI. The problem was everything around it: orchestration, governance, observability, and learning from execution.
 
-## What We Built
+## What Svantic Is
 
-Svantic is not another agent framework. It's the infrastructure layer that makes agents production-ready:
+Svantic is an **A2A-native agentic mesh** — a distributed system where every participant communicates via the Agent-to-Agent (A2A) protocol. But that's the technical description. Here's what it means in practice:
 
-**Forge** generates production-ready agent code from OpenAPI specs, TypeScript files, or plain English. What used to take weeks now takes minutes.
+**Your applications become agents.** Any service — a CRM, a database, a browser automation tool — can register capabilities with Svantic. The AI reasons about what to do; your services execute locally.
 
-**The SDK** turns any existing service into an AI-callable agent with five lines of code. Your tools run on your infrastructure — credentials never leave your environment.
+**Capabilities execute on your infrastructure.** This is the fundamental architectural difference. In LangChain, tools run on the server. In Svantic, capabilities run on your machine. Credentials never leave your environment. Data sovereignty is built in.
 
-**The Mesh** orchestrates multi-agent workflows dynamically. No fixed scripts. The workflow emerges from the task.
+**The system learns from every execution.** Our Knowledge Store captures successful patterns — navigation strategies, error recovery, authentication flows — and retrieves them for future tasks. The 10,000th document is processed faster than the 100th.
 
-**The Knowledge Store** remembers what worked. Every successful execution is indexed. The 50,000th task is easier than the 100th.
+**Governance is built in, not bolted on.** Policies define what agents can do before they do it. Approval workflows route through Slack, email, or your dashboard. Every action is traceable.
 
-**Guardrails** enforce policies before actions execute. Approval workflows, rate limits, data boundaries — governance built in, not bolted on.
+## The Architecture
+
+At the core, Svantic is a pipeline of specialized internal agents:
+
+- **Orchestrator** classifies intent and routes to the right handler
+- **Planner** designs execution strategies for complex tasks  
+- **Mesh Builder** constructs agent workflows dynamically
+- **Executor** runs the plan, invoking capabilities across agents
+- **Critic** validates outputs before returning them
+- **Learner** distills successful executions into reusable knowledge
+
+When a user asks "Check if SKU-1234 is in stock, and if so, update the support ticket with availability," the Planner sees this requires two agents (Inventory and Support), creates a plan, and the Executor runs it — making A2A calls to each agent.
+
+No one had to write this workflow. The AI composed it from declared capabilities.
+
+## Deployment Models
+
+We support three topologies:
+
+**Standalone** — One machine, one Svantic, one or more applications. Perfect for development and single-team workloads.
+
+**Sidecar** — One Kubernetes pod, one Svantic sidecar, one application. Each pod gets its own AI brain. 50 scraper workers means 50 autonomous agents.
+
+**Central + Sidecar** — A central Svantic hub with distributed sidecar workers. Shared knowledge store, centralized monitoring, fleet-wide learning. What Pod A learns on Monday benefits Pod C on Tuesday.
+
+The topologies are additive. Start standalone, move to sidecar, add central when you need fleet coordination. No code changes — only environment variables.
 
 ## Why Now
 
 Three things changed:
 
-1. **LLMs got good enough** — GPT-4, Claude 3, Gemini can actually reason about complex tasks.
-2. **Costs dropped** — What cost $100 in 2023 costs $1 today.
-3. **Enterprises are ready** — Regulated industries are no longer asking "should we?" but "how do we deploy safely?"
+- **LLMs got capable enough.** GPT-4, Claude 3, Gemini can reason about complex multi-step tasks.
+- **Costs dropped.** What cost $100 in 2023 costs $1 today.
+- **Enterprises are ready.** Regulated industries aren't asking "should we?" but "how do we deploy safely?"
 
-We built Svantic because we needed it ourselves. Our team spent years building integrations with hundreds of thousands of external systems. We needed agents that could adapt to change, learn from execution, and operate safely in regulated environments.
+We built Svantic because we needed it ourselves. Our team spent years building integrations with external systems. We needed agents that could adapt to change, learn from execution, and operate safely in regulated environments.
 
 ## Get Started
 
-Svantic is available today. Start with our free tier — no credit card required.
+Svantic is available today. Start with our free tier — 50 Compute Units per month, no credit card required.
 
-- **[Sign up](https://app.svantic.com/signup)** and deploy your first agent in minutes
-- **[Read the docs](https://docs.svantic.com)** to understand the platform
-- **[Talk to us](https://svantic.com/contact)** if you're evaluating for enterprise
-
-We're just getting started. The endgame isn't an agent framework — it's the intelligence layer for automated work.
+- **Sign up** at [app.svantic.com](https://app.svantic.com/signup)
+- **Read the docs** at [docs.svantic.com](https://docs.svantic.com)
+- **Talk to us** if you're evaluating for enterprise at [svantic.com/contact](/contact)
 
 Welcome to Svantic.
