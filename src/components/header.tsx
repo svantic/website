@@ -18,6 +18,7 @@ const NAV_ITEMS = [
       { label: 'Features', href: '/features' },
       { label: 'How It Works', href: '/how-it-works' },
       { label: 'Use Cases', href: '/use-cases' },
+      { label: 'Is It Right For You?', href: '/use-cases/fit' },
       { label: 'Pricing', href: '/pricing' },
     ],
   },

@@ -2,44 +2,55 @@
 
 import { Box, Button, Container, Grid2, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
-import CheckIcon from '@mui/icons-material/Check';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Link from 'next/link';
 import {
   BRAND_PRIMARY, BRAND_PRIMARY_HOVER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
   SURFACE, CARD, BORDER, CODE_BG, EMERALD,
 } from '@/theme/theme';
 
-const STATS = [
-  { value: '100%', label: 'Decision traceability' },
-  { value: '80%', label: 'Reduction in audit prep' },
-  { value: 'SOC 2', label: 'Compliant by default' },
-  { value: 'Real-time', label: 'Policy enforcement' },
+const WHY_DYNAMIC = [
+  {
+    title: 'Regulations reference multiple systems',
+    description: "Checking a single compliance requirement may require pulling data from HR, finance, IT, and legal. Static checklists don't assemble context.",
+  },
+  {
+    title: 'Requirements change constantly',
+    description: 'New regulations, updated guidance, evolving interpretations. Hard-coded rules become stale; learning systems adapt.',
+  },
+  {
+    title: 'Evidence gathering is the bottleneck',
+    description: "Auditors don't ask hard questions — they ask for evidence. Assembling it from 20 sources is where time goes.",
+  },
+  {
+    title: 'Exceptions need judgment',
+    description: 'Is this deviation a violation or an acceptable exception? Context matters. Static rules either over-flag or under-flag.',
+  },
 ];
 
-const CAPABILITIES = [
-  'Complete audit trails for every agent action',
-  'Policy enforcement before execution',
-  'Role-based access control (RBAC)',
-  'Sensitive data masking in logs',
-  'Approval workflows for high-risk actions',
-  'Export to SIEM and compliance tools',
+const WHEN_SVANTIC = [
+  'Compliance checks span 10+ internal systems',
+  'You prepare for audits multiple times per year',
+  'Regulations evolve frequently in your industry',
+  'Evidence gathering takes significant manual effort',
+  'You need comprehensive audit trails',
 ];
 
-const WORKFLOW_STEPS = [
-  { step: '01', title: 'Define Policies', description: 'Declarative guardrails specify what agents can and cannot do. Version-controlled and auditable.' },
-  { step: '02', title: 'Enforce', description: 'Every action is validated against policies before execution. Violations are blocked, not just logged.' },
-  { step: '03', title: 'Trace', description: 'Full audit trail: who requested what, which agent executed, what tools were called, what data was accessed.' },
-  { step: '04', title: 'Approve', description: 'High-risk actions trigger approval workflows. Reviewers see full context and can approve with one click.' },
-  { step: '05', title: 'Report', description: 'Generate compliance reports on demand. Filter by time, agent, action type, or user.' },
-  { step: '06', title: 'Improve', description: 'Analyze patterns to refine policies. Identify gaps before auditors do.' },
+const WHEN_STATIC = [
+  'You have a single, stable regulatory framework',
+  'All data lives in one GRC platform',
+  'Audits are infrequent (annually or less)',
+  'Compliance is a checkbox, not continuous monitoring',
 ];
 
 export default function CompliancePage() {
   return (
     <>
       <Hero />
-      <Stats />
+      <WhyDynamic />
+      <WhenToUse />
       <HowItWorks />
-      <Capabilities />
       <CTA />
     </>
   );
@@ -63,65 +74,108 @@ function Hero() {
           inset: 0,
           opacity: 0.1,
           backgroundImage:
-            'linear-gradient(hsl(262 83% 58% / 0.35) 1px, transparent 1px), ' +
-            'linear-gradient(90deg, hsl(262 83% 58% / 0.35) 1px, transparent 1px)',
+            'linear-gradient(hsl(270 83% 58% / 0.35) 1px, transparent 1px), ' +
+            'linear-gradient(90deg, hsl(270 83% 58% / 0.35) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
         }}
       />
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
-        <Typography
-          sx={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}
-        >
-          Use Case
-        </Typography>
-        <Typography variant="h1" sx={{ color: '#f8fafc', mb: 3, fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 800, maxWidth: 700 }}>
-          Compliance & Audit
-        </Typography>
-        <Typography sx={{ color: 'rgba(248,250,252,0.7)', fontSize: '1.15rem', lineHeight: 1.8, maxWidth: 600, mb: 4 }}>
-          "What did the AI decide and why?" — answered in one click. Built-in governance, audit trails, 
-          and policy enforcement for regulated industries.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
-            href="https://app.svantic.com/signup"
-            sx={{ bgcolor: BRAND_PRIMARY, fontWeight: 600, borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { bgcolor: BRAND_PRIMARY_HOVER } }}
+        <Link href="/use-cases" style={{ textDecoration: 'none' }}>
+          <Typography sx={{ color: TEXT_MUTED, fontSize: '0.85rem', mb: 3, '&:hover': { color: BRAND_PRIMARY } }}>
+            ← All Use Cases
+          </Typography>
+        </Link>
+        <Box sx={{ maxWidth: 800 }}>
+          <Typography
+            sx={{ color: '#8b5cf6', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}
           >
-            Start Building
-          </Button>
-          <Button
-            variant="outlined"
-            href="/contact"
-            sx={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { borderColor: 'rgba(255,255,255,0.4)' } }}
-          >
-            Talk to Sales
-          </Button>
+            Compliance & Audit
+          </Typography>
+          <Typography variant="h1" sx={{ color: '#f8fafc', mb: 3, fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 800, lineHeight: 1.2 }}>
+            When compliance evidence is scattered across dozens of systems.
+          </Typography>
+          <Typography sx={{ color: 'rgba(248,250,252,0.7)', fontSize: '1.1rem', lineHeight: 1.8, mb: 4 }}>
+            GRC platforms track what you need to prove. But proving it requires assembling evidence from 
+            systems those platforms don't touch — and regulations change faster than your integrations.
+          </Typography>
         </Box>
       </Container>
     </Box>
   );
 }
 
-function Stats() {
+function WhyDynamic() {
   return (
-    <Box sx={{ width: '100%', py: { xs: 6, md: 8 }, bgcolor: CARD, borderBottom: `1px solid ${BORDER}` }}>
+    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: SURFACE }}>
       <Container maxWidth="lg">
-        <Grid2 container spacing={4}>
-          {STATS.map((stat, i) => (
-            <Grid2 key={stat.label} size={{ xs: 6, md: 3 }}>
+        <Box sx={{ mb: 8 }}>
+          <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
+            Why Static Compliance Tools Fall Short
+          </Typography>
+          <Typography variant="h2" sx={{ color: TEXT_PRIMARY, maxWidth: 600 }}>
+            Compliance isn't tracking controls. It's proving them.
+          </Typography>
+        </Box>
+
+        <Grid2 container spacing={3}>
+          {WHY_DYNAMIC.map((item, i) => (
+            <Grid2 key={item.title} size={{ xs: 12, md: 6 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '2.5rem', fontWeight: 800, color: '#f59e0b', mb: 0.5 }}>{stat.value}</Typography>
-                  <Typography sx={{ color: TEXT_MUTED, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</Typography>
+                <Box sx={{ p: 4, borderRadius: '16px', bgcolor: CARD, border: `1px solid ${BORDER}`, height: '100%' }}>
+                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '1.15rem', mb: 2 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.95rem', lineHeight: 1.7 }}>
+                    {item.description}
+                  </Typography>
                 </Box>
               </motion.div>
             </Grid2>
           ))}
+        </Grid2>
+      </Container>
+    </Box>
+  );
+}
+
+function WhenToUse() {
+  return (
+    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: CARD, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
+      <Container maxWidth="lg">
+        <Grid2 container spacing={6}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <Typography sx={{ color: EMERALD, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
+              Use Svantic When
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {WHEN_SVANTIC.map((item) => (
+                <Box key={item} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <CheckCircleOutlineIcon sx={{ color: EMERALD, fontSize: 22, mt: 0.25 }} />
+                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.95rem', lineHeight: 1.6 }}>{item}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <Typography sx={{ color: TEXT_MUTED, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
+              Stick With GRC Platforms When
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {WHEN_STATIC.map((item) => (
+                <Box key={item} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.25 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: TEXT_MUTED }} />
+                  </Box>
+                  <Typography sx={{ color: TEXT_MUTED, fontSize: '0.95rem', lineHeight: 1.6 }}>{item}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Grid2>
         </Grid2>
       </Container>
     </Box>
@@ -129,77 +183,58 @@ function Stats() {
 }
 
 function HowItWorks() {
+  const steps = [
+    {
+      step: '01',
+      title: 'Requirement Mapping',
+      description: 'Agent understands the regulation, identifies required evidence, and maps to your internal systems.',
+    },
+    {
+      step: '02',
+      title: 'Evidence Assembly',
+      description: 'Pulls relevant data from each system — access logs, config snapshots, approval records, audit trails.',
+    },
+    {
+      step: '03',
+      title: 'Gap Identification',
+      description: 'Compares evidence against requirements. Flags gaps, suggests remediation, surfaces exceptions for review.',
+    },
+    {
+      step: '04',
+      title: 'Audit Readiness',
+      description: 'Packages evidence for auditors. Updates as regulations change. Learns from audit findings.',
+    },
+  ];
+
   return (
     <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: SURFACE }}>
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ mb: 8 }}>
           <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
             How It Works
           </Typography>
-          <Typography variant="h2" sx={{ color: TEXT_PRIMARY, mb: 2 }}>
-            Governance built in, not bolted on.
-          </Typography>
-          <Typography sx={{ color: TEXT_SECONDARY, maxWidth: 560, mx: 'auto' }}>
-            Every agent action is traceable, every policy is enforced, every decision is explainable.
+          <Typography variant="h2" sx={{ color: TEXT_PRIMARY }}>
+            Evidence assembly, not checklist tracking.
           </Typography>
         </Box>
 
         <Grid2 container spacing={3}>
-          {WORKFLOW_STEPS.map((step, i) => (
-            <Grid2 key={step.step} size={{ xs: 12, md: 4 }}>
+          {steps.map((item, i) => (
+            <Grid2 key={item.step} size={{ xs: 12, sm: 6, md: 3 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                style={{ height: '100%' }}
               >
-                <Box sx={{ p: 4, borderRadius: '16px', bgcolor: CARD, border: `1px solid ${BORDER}`, height: '100%' }}>
-                  <Typography sx={{ color: '#f59e0b', fontWeight: 800, fontSize: '0.85rem', mb: 2 }}>{step.step}</Typography>
-                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '1.1rem', mb: 1 }}>{step.title}</Typography>
-                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', lineHeight: 1.7 }}>{step.description}</Typography>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 800, fontSize: '2.5rem', mb: 2 }}>{item.step}</Typography>
+                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, mb: 1 }}>{item.title}</Typography>
+                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', lineHeight: 1.6 }}>{item.description}</Typography>
                 </Box>
               </motion.div>
             </Grid2>
           ))}
-        </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
-function Capabilities() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: CARD, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Grid2 container spacing={6} alignItems="center">
-          <Grid2 size={{ xs: 12, md: 6 }}>
-            <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
-              Capabilities
-            </Typography>
-            <Typography variant="h2" sx={{ color: TEXT_PRIMARY, mb: 3 }}>
-              Enterprise-grade compliance.
-            </Typography>
-            <Typography sx={{ color: TEXT_SECONDARY, mb: 4, lineHeight: 1.8 }}>
-              SOC 2 Type II certified. GDPR and HIPAA ready. Built for regulated industries from day one.
-            </Typography>
-            <Button
-              href="/security"
-              sx={{ color: BRAND_PRIMARY, fontWeight: 600, textTransform: 'none', p: 0 }}
-            >
-              Learn about our security →
-            </Button>
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {CAPABILITIES.map((cap) => (
-                <Box key={cap} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: '10px', bgcolor: SURFACE }}>
-                  <CheckIcon sx={{ color: EMERALD, fontSize: 20 }} />
-                  <Typography sx={{ color: TEXT_PRIMARY, fontSize: '0.95rem' }}>{cap}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Grid2>
         </Grid2>
       </Container>
     </Box>
@@ -211,25 +246,28 @@ function CTA() {
     <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, background: `linear-gradient(180deg, ${CODE_BG} 0%, #0f172a 100%)`, textAlign: 'center' }}>
       <Container maxWidth="md">
         <Typography variant="h2" sx={{ color: '#f8fafc', mb: 3 }}>
-          Ready for compliant AI automation?
+          See if your compliance workflow fits.
         </Typography>
         <Typography sx={{ color: 'rgba(248,250,252,0.65)', fontSize: '1.1rem', mb: 5, maxWidth: 500, mx: 'auto' }}>
-          Deploy AI agents your compliance team will love. Built-in governance from day one.
+          Take our quick assessment or talk to us about your specific compliance challenges.
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Button
+            component={Link}
+            href="/use-cases/fit"
             variant="contained"
-            href="https://app.svantic.com/signup"
+            endIcon={<ArrowForwardIcon />}
             sx={{ bgcolor: BRAND_PRIMARY, fontWeight: 600, borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { bgcolor: BRAND_PRIMARY_HOVER } }}
           >
-            Start Building Free
+            Take the Assessment
           </Button>
           <Button
-            variant="outlined"
+            component={Link}
             href="/contact"
+            variant="outlined"
             sx={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', px: 4, py: 1.5, textTransform: 'none', '&:hover': { borderColor: 'rgba(255,255,255,0.4)' } }}
           >
-            Schedule Demo
+            Talk to Us
           </Button>
         </Box>
       </Container>
