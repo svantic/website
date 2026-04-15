@@ -11,23 +11,23 @@ import {
 const PRICING_TIERS = [
   {
     name: 'Free',
-    description: 'Get started with AI agent orchestration.',
+    description: 'For developers exploring the mesh.',
     price: '$0',
     period: 'forever',
     cta: 'Get Started Free',
     cta_href: 'https://app.svantic.com/signup',
     highlighted: false,
     limits: {
-      compute_units: '25 CU/month',
-      compute_tokens: '(2.5M tokens)',
-      sessions: '3 concurrent sessions',
-      retention: '7-day trace retention',
+      sessions: '50 sessions/month',
+      cu_per_session: '1 CU per session',
+      concurrent: '3 concurrent sessions',
+      retention: '7-day retention',
       overage: 'Upgrade to continue',
     },
   },
   {
     name: 'Pro',
-    description: 'For teams building production workflows.',
+    description: 'For teams running production workflows.',
     price: '$199',
     period: '/month',
     cta: 'Start Free Trial',
@@ -35,41 +35,41 @@ const PRICING_TIERS = [
     highlighted: true,
     badge: 'Most Popular',
     limits: {
-      compute_units: '100 CU/month',
-      compute_tokens: '(10M tokens)',
-      sessions: '15 concurrent sessions',
-      retention: '30-day trace retention',
-      overage: '$0.30/CU overage',
+      sessions: '500 sessions/month',
+      cu_per_session: '2 CU per session',
+      concurrent: '15 concurrent sessions',
+      retention: '30-day retention',
+      overage: '+$0.50/session, +$0.25/CU',
     },
   },
   {
-    name: 'Team',
-    description: 'For organizations scaling AI automation.',
-    price: '$699',
+    name: 'Scale',
+    description: 'For high-throughput deployments.',
+    price: '$999',
     period: '/month',
     cta: 'Start Free Trial',
-    cta_href: 'https://app.svantic.com/signup?plan=team',
+    cta_href: 'https://app.svantic.com/signup?plan=scale',
     highlighted: false,
     limits: {
-      compute_units: '500 CU/month',
-      compute_tokens: '(50M tokens)',
-      sessions: '50 concurrent sessions',
-      retention: '90-day trace retention',
-      overage: '$0.25/CU overage',
+      sessions: '5,000 sessions/month',
+      cu_per_session: '2 CU per session',
+      concurrent: '100 concurrent sessions',
+      retention: '90-day retention',
+      overage: '+$0.30/session, +$0.20/CU',
     },
   },
   {
     name: 'Enterprise',
-    description: 'Custom solutions for large deployments.',
-    price: '$2,500',
-    period: '/month+',
+    description: 'For large-scale deployments.',
+    price: 'Custom',
+    period: '',
     cta: 'Contact Sales',
     cta_href: '/contact?plan=enterprise',
     highlighted: false,
     limits: {
-      compute_units: '2,500+ CU/month',
-      compute_tokens: '(250M+ tokens)',
       sessions: 'Unlimited sessions',
+      cu_per_session: 'Custom CU/session',
+      concurrent: 'Unlimited concurrent',
       retention: 'Custom retention',
       overage: 'Volume discounts',
     },
@@ -79,38 +79,42 @@ const PRICING_TIERS = [
 const INCLUDED_FEATURES = [
   'Unlimited agents',
   'Unlimited knowledge storage',
-  'Unlimited team members',
   'All guardrails & policies',
   'Approval workflows',
   'Slack & webhook notifications',
   'Full API access',
   'Dashboard & analytics',
+  'Spending alerts & caps',
 ];
 
 const FAQ_ITEMS = [
   {
+    question: 'What is a session?',
+    answer: 'A session is one complete workflow through the mesh — from start to completion. It can include multiple steps, tool calls, and agents working together. Simple queries and complex multi-step workflows each count as one session.',
+  },
+  {
     question: 'What is a Compute Unit (CU)?',
-    answer: 'A Compute Unit represents 100,000 tokens of AI processing. This includes reasoning, planning, knowledge retrieval, and tool coordination. Simple tasks like answering a question use ~0.3 CU, while complex tasks like processing a multi-page document or navigating a web portal may use 2-10 CU.',
+    answer: 'A CU represents 100,000 tokens of AI processing. Each session includes CU to cover typical workloads. Light tasks use ~0.5 CU, portal navigation with screenshots uses ~2-4 CU, and document processing uses ~0.2 CU per page.',
   },
   {
-    question: 'What counts as a concurrent session?',
-    answer: "A session is an active conversation or workflow with your agents. Concurrent sessions are the number of sessions running at the same time. When a session completes, that slot is freed up for new sessions.",
+    question: 'How does overage work?',
+    answer: "Two types: (1) Session overage — if you run more sessions than your plan includes. (2) CU overage — if any session uses more compute than its included CU. Most workflows stay within the included CU; heavy tasks like document or video processing may incur CU overage.",
   },
   {
-    question: 'What happens if I exceed my Compute Units?',
-    answer: "On Free, you'll be prompted to upgrade. On Pro and Team, overage is billed at the rates shown ($0.30/CU for Pro, $0.25/CU for Team). You can set spending alerts and caps in your dashboard to control costs.",
+    question: 'What uses extra CU?',
+    answer: 'Processing images (~0.02 CU each), documents (~0.2 CU per page), or video (~2 CU per minute). For example, a 50-page document uses ~10 CU — on Pro (2 CU included), you\'d pay 8 CU overage at $0.25 = $2 extra for that session.',
   },
   {
-    question: 'Is there really no limit on agents or storage?',
-    answer: 'Correct! You can deploy as many agents as you need and store unlimited knowledge. We only meter compute usage (CU) and concurrent sessions to keep pricing simple and predictable.',
+    question: 'Can I set spending limits?',
+    answer: 'Yes. Set alerts and hard caps in your dashboard. You\'ll get notified before hitting limits and can choose to stop or continue with overage billing.',
   },
   {
-    question: 'Do you offer discounts for startups or nonprofits?',
-    answer: 'Yes! Contact us at hello@svantic.com with details about your organization. We offer up to 50% off for qualifying startups and nonprofits.',
+    question: 'Is there a limit on agents or storage?',
+    answer: 'No! Deploy unlimited agents and store unlimited knowledge on any plan. We only meter sessions and compute to keep pricing simple.',
   },
   {
-    question: 'What does Enterprise pricing look like?',
-    answer: 'Enterprise starts at $2,500/month with 2,500 CU included and volume discounts on overage (as low as $0.15/CU). We offer custom SLAs, dedicated infrastructure, and compliance features. Contact sales for a quote.',
+    question: 'What does Enterprise include?',
+    answer: 'Unlimited sessions, custom CU allocations, volume discounts (as low as $0.10/session and $0.10/CU), dedicated infrastructure, SLAs, and compliance features. Contact sales for a quote.',
   },
 ];
 
@@ -159,10 +163,10 @@ function Hero() {
             mb: 2,
           }}
         >
-          Simple, usage-based pricing
+          Simple, session-based pricing
         </Typography>
         <Typography sx={{ color: TEXT_SECONDARY, fontSize: '1.1rem', maxWidth: 560, mx: 'auto', lineHeight: 1.7 }}>
-          Pay for compute, not features. Every plan includes unlimited agents, storage, and team members.
+          Pay per workflow, not features. Each session includes compute for typical workloads. Heavy tasks pay a bit more.
         </Typography>
       </Container>
     </Box>
@@ -248,14 +252,14 @@ function PricingTiers() {
                   </Button>
 
                   <Box sx={{ p: 2.5, borderRadius: '10px', bgcolor: SURFACE, flex: 1 }}>
-                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: TEXT_PRIMARY, mb: 0.25 }}>
-                      {tier.limits.compute_units}
-                    </Typography>
-                    <Typography sx={{ color: TEXT_MUTED, fontSize: '0.8rem', mb: 1.5 }}>
-                      {tier.limits.compute_tokens}
+                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: TEXT_PRIMARY, mb: 0.5 }}>
+                      {tier.limits.sessions}
                     </Typography>
                     <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.875rem', mb: 0.75 }}>
-                      {tier.limits.sessions}
+                      {tier.limits.cu_per_session}
+                    </Typography>
+                    <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.875rem', mb: 0.75 }}>
+                      {tier.limits.concurrent}
                     </Typography>
                     <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.875rem', mb: 0.75 }}>
                       {tier.limits.retention}
@@ -265,6 +269,7 @@ function PricingTiers() {
                         color: tier.name === 'Free' ? TEXT_MUTED : BRAND_PRIMARY,
                         fontSize: '0.875rem',
                         fontWeight: 500,
+                        mt: 1,
                       }}
                     >
                       {tier.limits.overage}
@@ -296,7 +301,7 @@ function IncludedFeatures() {
           Everything included in every plan
         </Typography>
         <Typography sx={{ color: TEXT_SECONDARY, mb: 5, textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
-          No feature gates. No artificial limits. Just pay for the compute you use.
+          No feature gates. No artificial limits. Just pay for the sessions you run.
         </Typography>
 
         <Grid2 container spacing={2}>
