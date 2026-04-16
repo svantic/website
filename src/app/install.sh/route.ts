@@ -28,7 +28,8 @@ BLUE='\\033[0;34m'
 NC='\\033[0m'
 
 BINARY_NAME="svantic"
-RELEASES_URL="https://svantic.com/cli"
+REPO="svantic/cli"
+RELEASES_URL="https://github.com/\${REPO}/releases"
 
 detect_platform() {
   local os arch
@@ -59,7 +60,10 @@ detect_platform() {
 }
 
 get_latest_version() {
-  curl -fsSL "\${RELEASES_URL}/latest.txt" 2>/dev/null || echo ""
+  curl -fsSL "https://api.github.com/repos/\${REPO}/releases/latest" 2>/dev/null \\
+    | grep '"tag_name"' \\
+    | sed -E 's/.*"v([^"]+)".*/\\1/' \\
+    || echo ""
 }
 
 get_install_dir() {
@@ -128,7 +132,7 @@ main() {
   local binary_file="svantic-\${platform}"
   [[ "$platform" == win-* ]] && binary_file="\${binary_file}.exe"
   
-  local download_url="\${RELEASES_URL}/v\${version}/\${binary_file}"
+  local download_url="\${RELEASES_URL}/download/v\${version}/\${binary_file}"
   local output_path="\${install_dir}/\${BINARY_NAME}"
   
   echo ""

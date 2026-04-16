@@ -1,8 +1,0 @@
-# Placeholder - upload compiled binaries here
-# Structure:
-#   v0.1.0/
-#     svantic-darwin-arm64
-#     svantic-darwin-x64
-#     svantic-linux-x64
-#     svantic-linux-arm64
-#     svantic-win-x64.exe
