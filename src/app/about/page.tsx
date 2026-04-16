@@ -7,22 +7,11 @@ import {
   SURFACE, CARD, BORDER, CODE_BG, ACCENT_LIGHT, EMERALD,
 } from '@/theme/theme';
 
-const TEAM_MEMBERS = [
-  { name: 'Alex Chen', role: 'CEO & Co-founder', bio: 'Previously VP Engineering at Scale AI. 15+ years building production ML systems.', image: '/team/alex.jpg' },
-  { name: 'Sarah Kim', role: 'CTO & Co-founder', bio: 'Former Staff Engineer at Google Brain. PhD in Distributed Systems from MIT.', image: '/team/sarah.jpg' },
-  { name: 'Michael Torres', role: 'VP of Engineering', bio: 'Built automation platforms at Stripe and Plaid. Expert in fintech compliance.', image: '/team/michael.jpg' },
-  { name: 'Jennifer Park', role: 'VP of Product', bio: 'Previously PM Lead at Datadog. Passionate about developer experience.', image: '/team/jennifer.jpg' },
-];
-
 const VALUES = [
   { title: 'Build for production', body: 'Every feature we ship must work in regulated, high-stakes environments. Demos are easy; production is hard.' },
   { title: 'Compound knowledge', body: 'Systems should get smarter over time. Every interaction is an opportunity to learn and improve.' },
   { title: 'Trust through transparency', body: 'Every decision an agent makes should be explainable. If you can\'t see it, you can\'t trust it.' },
   { title: 'Ship fast, iterate faster', body: 'We bias toward action. Small, frequent releases beat big, infrequent ones.' },
-];
-
-const INVESTORS = [
-  'Sequoia Capital', 'Andreessen Horowitz', 'Y Combinator', 'Index Ventures',
 ];
 
 export default function AboutPage() {
@@ -31,8 +20,6 @@ export default function AboutPage() {
       <Hero />
       <Story />
       <Values />
-      <Team />
-      <Investors />
       <JoinUs />
     </>
   );
@@ -212,81 +199,6 @@ function Values() {
             </Grid2>
           ))}
         </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
-function Team() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: CARD, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography sx={{ color: BRAND_PRIMARY, fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}>
-            Leadership
-          </Typography>
-          <Typography variant="h2" sx={{ color: TEXT_PRIMARY }}>
-            Meet the team.
-          </Typography>
-        </Box>
-
-        <Grid2 container spacing={3}>
-          {TEAM_MEMBERS.map((member, i) => (
-            <Grid2 key={member.name} size={{ xs: 12, sm: 6, md: 3 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-              >
-                <Box sx={{ textAlign: 'center' }}>
-                  <Box
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: '50%',
-                      bgcolor: SURFACE,
-                      border: `1px solid ${BORDER}`,
-                      mx: 'auto',
-                      mb: 2,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Typography sx={{ color: TEXT_MUTED, fontSize: '2rem' }}>
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </Typography>
-                  </Box>
-                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '1.05rem', mb: 0.5 }}>{member.name}</Typography>
-                  <Typography sx={{ color: BRAND_PRIMARY, fontSize: '0.85rem', fontWeight: 500, mb: 1 }}>{member.role}</Typography>
-                  <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', lineHeight: 1.6 }}>{member.bio}</Typography>
-                </Box>
-              </motion.div>
-            </Grid2>
-          ))}
-        </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
-function Investors() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 8, md: 10 }, bgcolor: SURFACE, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography sx={{ color: TEXT_MUTED, fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase', mb: 4 }}>
-            Backed by
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: { xs: 4, md: 8 }, flexWrap: 'wrap' }}>
-            {INVESTORS.map((investor) => (
-              <Typography key={investor} sx={{ color: TEXT_SECONDARY, fontSize: '1.1rem', fontWeight: 600 }}>
-                {investor}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
       </Container>
     </Box>
   );

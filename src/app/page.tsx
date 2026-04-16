@@ -421,17 +421,14 @@ const PLATFORM_FEATURES = [
   { title: 'Guardrails', body: 'Policies enforced before actions execute. Identity, boundaries, least-privilege.', color: ACCENT_PINK },
 ];
 
-const TRUSTED_BY = ['Fortune 500 Companies', 'Fast-Growing Startups', 'Government Agencies', 'Healthcare Organizations'];
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <TrustedBy />
       <UseCases />
       <Platform />
       <HowItWorks />
-      <Testimonials />
       <CTA />
     </>
   );
@@ -588,27 +585,6 @@ function Hero() {
           }}
         >
           <MeshDiagram />
-        </Box>
-      </Container>
-    </Box>
-  );
-}
-
-function TrustedBy() {
-  return (
-    <Box sx={{ width: '100%', py: 6, bgcolor: CARD, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Typography
-          sx={{ color: TEXT_MUTED, fontSize: '0.8rem', textAlign: 'center', mb: 3, letterSpacing: '0.1em', textTransform: 'uppercase' }}
-        >
-          Trusted by teams at
-        </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: { xs: 4, md: 8 }, flexWrap: 'wrap' }}>
-          {TRUSTED_BY.map((name) => (
-            <Typography key={name} sx={{ color: TEXT_MUTED, fontSize: '0.95rem', fontWeight: 500 }}>
-              {name}
-            </Typography>
-          ))}
         </Box>
       </Container>
     </Box>
@@ -813,73 +789,6 @@ function HowItWorks() {
                   <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', lineHeight: 1.65 }}>{item.body}</Typography>
                 </Box>
               </motion.div>
-            </Grid2>
-          ))}
-        </Grid2>
-      </Container>
-    </Box>
-  );
-}
-
-function Testimonials() {
-  return (
-    <Box sx={{ width: '100%', py: { xs: 10, md: 14 }, bgcolor: CARD, borderTop: `1px solid ${BORDER}` }}>
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography
-            sx={{ color: BRAND_PRIMARY, fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', mb: 2 }}
-          >
-            Testimonials
-          </Typography>
-          <Typography variant="h2" sx={{ color: TEXT_PRIMARY }}>
-            What our customers say.
-          </Typography>
-        </Box>
-
-        <Grid2 container spacing={3}>
-          {[
-            {
-              quote:
-                'Svantic reduced our ticket resolution time by 60%. The knowledge store means our agents actually learn from every interaction.',
-              author: 'Sarah Chen',
-              role: 'VP of Support',
-              company: 'TechCorp',
-            },
-            {
-              quote:
-                'We deployed our first production agent in under a week. The guardrails gave our compliance team the confidence to go live.',
-              author: 'Michael Torres',
-              role: 'CTO',
-              company: 'FinanceFlow',
-            },
-            {
-              quote:
-                'The flipped tool model was the key. Our data never leaves our infrastructure, which made enterprise approval possible.',
-              author: 'Jennifer Park',
-              role: 'Head of Engineering',
-              company: 'HealthSync',
-            },
-          ].map((testimonial, i) => (
-            <Grid2 key={i} size={{ xs: 12, md: 4 }}>
-              <Box
-                sx={{
-                  p: 4,
-                  borderRadius: '16px',
-                  border: `1px solid ${BORDER}`,
-                  bgcolor: SURFACE,
-                  height: '100%',
-                }}
-              >
-                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '1rem', lineHeight: 1.7, mb: 3, fontStyle: 'italic' }}>
-                  &ldquo;{testimonial.quote}&rdquo;
-                </Typography>
-                <Box>
-                  <Typography sx={{ fontWeight: 700, color: TEXT_PRIMARY, fontSize: '0.95rem' }}>{testimonial.author}</Typography>
-                  <Typography sx={{ color: TEXT_MUTED, fontSize: '0.85rem' }}>
-                    {testimonial.role}, {testimonial.company}
-                  </Typography>
-                </Box>
-              </Box>
             </Grid2>
           ))}
         </Grid2>
