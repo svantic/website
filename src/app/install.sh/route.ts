@@ -28,7 +28,7 @@ BLUE='\\033[0;34m'
 NC='\\033[0m'
 
 BINARY_NAME="svantic"
-REPO="svantic/cli"
+REPO="svantic/platform"
 RELEASES_URL="https://github.com/\${REPO}/releases"
 
 detect_platform() {
