@@ -46,6 +46,10 @@ const NAV_ITEMS: NavItem[] = [
     href: '/pricing',
   },
   {
+    label: 'Download',
+    href: '/download',
+  },
+  {
     label: 'Blog',
     href: '/blog',
   },
