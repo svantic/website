@@ -13,7 +13,7 @@ import {
   SURFACE, CARD, BORDER, CODE_BG,
 } from '@/theme/theme';
 
-const BFF_URL = process.env.NEXT_PUBLIC_BFF_URL || 'https://bff.svantic.com';
+const API_BASE = '';
 
 const PLATFORMS = [
   { id: 'darwin-arm64', name: 'macOS', arch: 'Apple Silicon', icon: AppleIcon },
@@ -28,10 +28,10 @@ export default function DownloadPage() {
   const [copied, set_copied] = useState(false);
 
   useEffect(() => {
-    fetch(`${BFF_URL}/api/download/cli/latest`)
+    fetch(`${API_BASE}/api/download/cli/latest`)
       .then(res => res.json())
       .then(data => set_version(data.version))
-      .catch(() => set_version('1.3.1'));
+      .catch(() => set_version('1.3.0'));
   }, []);
 
   const copy_command = () => {
@@ -41,7 +41,7 @@ export default function DownloadPage() {
   };
 
   const download_url = (platform: string) => {
-    return `${BFF_URL}/api/download/cli/${version}/${platform}`;
+    return `${API_BASE}/api/download/cli/${version}/${platform}`;
   };
 
   return (

@@ -28,7 +28,7 @@ BLUE='\\033[0;34m'
 NC='\\033[0m'
 
 BINARY_NAME="svantic"
-BFF_URL="https://bff.svantic.com"
+API_URL="https://svantic.com"
 
 detect_platform() {
   local os arch
@@ -59,7 +59,7 @@ detect_platform() {
 }
 
 get_latest_version() {
-  curl -fsSL "\${BFF_URL}/api/download/cli/latest" 2>/dev/null \\
+  curl -fsSL "\${API_URL}/api/download/cli/latest" 2>/dev/null \\
     | grep -o '"version":"[^"]*"' \\
     | sed 's/"version":"\\([^"]*\\)"/\\1/' \\
     || echo ""
@@ -131,7 +131,7 @@ main() {
   local binary_file="svantic-\${platform}"
   [[ "$platform" == win-* ]] && binary_file="\${binary_file}.exe"
   
-  local download_url="\${BFF_URL}/api/download/cli/\${version}/\${platform}"
+  local download_url="\${API_URL}/api/download/cli/\${version}/\${platform}"
   local output_path="\${install_dir}/\${BINARY_NAME}"
   
   echo ""
