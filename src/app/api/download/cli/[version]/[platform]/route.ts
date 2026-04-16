@@ -1,5 +1,7 @@
 const BFF_INTERNAL_URL = process.env.BFF_INTERNAL_URL || 'http://bff.railway.internal:7003';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ version: string; platform: string }> }
@@ -9,7 +11,7 @@ export async function GET(
   try {
     const response = await fetch(
       `${BFF_INTERNAL_URL}/api/download/cli/${version}/${platform}`,
-      { headers: { 'Accept': 'application/octet-stream' } }
+      { headers: { 'Accept': 'application/octet-stream' }, cache: 'no-store' }
     );
 
     if (!response.ok) {
