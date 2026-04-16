@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   description: 'Every system deserves a Savant. Build AI agents that learn, adapt, and get smarter over time. From pilot to production.',
   keywords: ['AI agents', 'automation', 'orchestration', 'machine learning', 'enterprise AI'],
   authors: [{ name: 'Svantic' }],
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Svantic — Build, Orchestrate, and Govern AI Agents',
     description: 'Every system deserves a Savant. Build AI agents that learn, adapt, and get smarter over time.',
