@@ -42,14 +42,6 @@ const NAV_ITEMS: NavItem[] = [
     href: '/use-cases',
   },
   {
-    label: 'Pricing',
-    href: '/pricing',
-  },
-  {
-    label: 'Download',
-    href: '/download',
-  },
-  {
     label: 'Blog',
     href: '/blog',
   },
@@ -57,7 +49,6 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Company',
     children: [
       { label: 'About Us', href: '/about' },
-      { label: 'Careers', href: '/careers' },
       { label: 'Contact', href: '/contact' },
     ],
   },
@@ -208,6 +199,27 @@ export function Header() {
                 Sign In
               </Button>
               <Button
+                component={Link}
+                href="/download"
+                variant="outlined"
+                sx={{
+                  borderColor: BRAND_PRIMARY,
+                  color: BRAND_PRIMARY,
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  px: 2.5,
+                  '&:hover': { 
+                    borderColor: BRAND_PRIMARY_HOVER,
+                    color: BRAND_PRIMARY_HOVER,
+                    bgcolor: `${BRAND_PRIMARY}08`,
+                  },
+                }}
+              >
+                Download
+              </Button>
+              <Button
                 component="a"
                 href="https://app.svantic.com/signup"
                 target="_blank"
@@ -318,6 +330,28 @@ export function Header() {
               }}
             >
               Get Started
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              component={Link}
+              href="/download"
+              onClick={() => set_mobile_open(false)}
+              sx={{
+                borderColor: BRAND_PRIMARY,
+                color: BRAND_PRIMARY,
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: '8px',
+                py: 1.25,
+                mb: 1.5,
+                '&:hover': { 
+                  borderColor: BRAND_PRIMARY_HOVER,
+                  bgcolor: `${BRAND_PRIMARY}08`,
+                },
+              }}
+            >
+              Download
             </Button>
             <Button
               fullWidth
