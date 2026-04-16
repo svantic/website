@@ -1,4 +1,4 @@
-const BFF_INTERNAL_URL = process.env.BFF_INTERNAL_URL || 'http://bff.railway.internal:3000';
+const BFF_INTERNAL_URL = process.env.BFF_INTERNAL_URL || 'http://bff.railway.internal:7003';
 
 export async function GET(
   request: Request,
